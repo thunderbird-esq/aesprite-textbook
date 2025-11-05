@@ -296,7 +296,7 @@ class GeminiClient:
 
 **CRITICAL RULES FOR VISUAL PROMPT GENERATION:**
 1. **NO SUBJECTIVITY:** Never use words like "nice," "good," "cool," or "awesome." Every instruction must be a number, a coordinate, a hex code, or a precise technical term.
-2. **QUANTIFY EVERYTHING:** Use pixels (px), degrees (°), hex codes (#FF6600), and specific photographic terms (f/11, 100mm macro lens).
+2. **QUANTIFY EVERYTHING:** Use pixels (px), degrees (deg), hex codes (#FF6600), and specific photographic terms (f/11, 100mm macro lens).
 3. **1996 TECHNOLOGY ONLY:** The final aesthetic must be achievable with 1996-era desktop publishing tools. This means no gradients, no soft shadows, no modern blurs, and no antialiasing on bitmapped fonts.
 4. **FORBIDDEN AESTHETICS:** Any visual element, style, or design trend originating after 1997 is strictly forbidden from all generated images.
 
