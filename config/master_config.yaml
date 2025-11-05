@@ -1,0 +1,49 @@
+# master_config.yaml
+# Master Configuration for Klutz Press Computer Graphics Workbook
+# Single source of truth for all project settings
+
+project:
+  name: "Klutz Press Computer Graphics Workbook"
+  year: 1996
+  pages: 20
+
+technical:
+  canvas_size: [3400, 2200]  # Two-page spread dimensions in pixels
+  dpi: 300                    # Print-quality resolution
+  color_space: "sRGB"         # Standard RGB color space
+
+aesthetic_rules:
+  # 70/20/10 Color Distribution Rule
+  color_distribution:
+    klutz_primary: 0.70       # Foundation palette (Red, Blue, Yellow, etc.)
+    nickelodeon_accent: 0.20  # Energetic orange (#F57D0D - Pantone 021 C)
+    goosebumps_theme: 0.10    # Acid green (#95C120) for special effects
+
+  # Maximum rotation angles for element types (in degrees)
+  rotation_limits:
+    text: 5                   # Text blocks and headlines: minimal tilt
+    containers: 15            # Feature boxes and containers: moderate chaos
+    photos: 10                # Instructional photos: subtle rotation
+
+  # Texture overlay opacity settings
+  texture_opacity:
+    global: 0.08              # Overall paper texture blend strength
+
+print_simulation:
+  # Simulated 1996 offset printing artifacts
+
+  # CMYK channel misregistration (in pixels)
+  cmyk_shift:
+    magenta: [1, 0]           # +1px horizontal shift
+    yellow: [0, -1]           # -1px vertical shift
+
+  dot_gain: 0.95              # Ink spread on uncoated paper (brightness factor)
+  vignette: 0.15              # Natural light falloff intensity
+  spine_shadow: 0.20          # Page curvature shadow opacity
+
+validation:
+  # Period Police validation rules
+  enforce_period_accuracy: true        # Check for anachronistic terms in prompts
+  check_color_ratios: true             # Verify 70/20/10 color distribution
+  validate_safe_zones: true            # Ensure content respects margins
+  prevent_spine_intrusion: true        # Block content from spine dead zone

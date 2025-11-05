@@ -1,0 +1,28 @@
+spread_id: test_spread_04_05
+elements:
+  - id: element_0
+    type: sprite
+    position:
+      - 200
+      - 300
+    size:
+      - 32
+      - 32
+    rotation: 0
+    prompt_template: "A pixel art sprite of a {topic} in Aesprite style"
+  - id: element_1
+    type: sprite
+    position:
+      - 600
+      - 500
+    size:
+      - 32
+      - 32
+    rotation: 5
+    prompt_template: "A pixel art sprite of a {topic} with detail"
+metadata:
+  page_numbers:
+    - 4
+    - 5
+  section: getting_started
+  module: module_1
