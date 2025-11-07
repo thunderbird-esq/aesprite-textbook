@@ -23,15 +23,17 @@ Welcome to the Klutz Workbook Project documentation! This index organizes all do
 
 ### First-Time Setup
 
+**Note:** All commands should be run from project root.
+
 ```bash
 # Install dependencies
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 
 # Verify installation
 python -c "import yaml; import PIL; print('Ready!')"
 
 # Generate your first spread
-python ../klutz_compositor.py config/layouts/spread_04_05.yaml
+python klutz_compositor.py config/layouts/spread_04_05.yaml
 ```
 
 ### Common Tasks

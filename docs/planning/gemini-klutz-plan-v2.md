@@ -29,16 +29,19 @@ klutz-workbook-project/
 │   ├── textures/          # Scanned paper and binding textures
 │   ├── fonts/             # Period-accurate TTF/OTF files
 │   └── reference/         # Source material scans for analysis
-├── scripts/
-│   ├── compositor.py      # The main Python composition engine
-│   ├── asset_validator.py # The "Period Police" validation script
-│   └── prompt_generator.py  # (Optional) Script to build prompts from templates
 ├── prompts/
 │   ├── components/        # Text files for individual element prompts
 │   └── compiled/          # (Optional) Final compiled prompts
-└── output/
-    ├── spreads/           # Final rendered two-page spreads (PNGs)
-    └── validation/        # Test renders and validation reports
+├── output/
+│   ├── spreads/           # Final rendered two-page spreads (PNGs)
+│   └── validation/        # Test renders and validation reports
+├── klutz_compositor.py    # The main Python composition engine
+├── asset_validator.py     # The "Period Police" validation script
+├── prompt_generator.py    # Script to build prompts from templates
+├── post_processor.py      # Post-processing utilities
+├── gemini_integration.py  # Gemini API integration
+├── nano_banana_integration.py  # nano-banana model integration
+└── quality_assurance.py   # Quality assurance and validation
 1.3 Technical Stack
 Required Tools:
 

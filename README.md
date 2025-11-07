@@ -86,7 +86,7 @@ python -c "import yaml; import PIL; import numpy; print('All dependencies instal
 3. Run the compositor:
 
 ```bash
-python scripts/compositor.py config/layouts/spread_04_05.yaml
+python klutz_compositor.py config/layouts/spread_04_05.yaml
 ```
 
 The output will be saved to `output/spreads/`.
@@ -136,7 +136,7 @@ All documentation is now organized in the `docs/` directory:
 Before using any generated assets, run them through the Period Police validator:
 
 ```bash
-python scripts/asset_validator.py assets/generated/photo_mouse_hand_01.png
+python asset_validator.py assets/generated/photo_mouse_hand_01.png
 ```
 
 ## Directory Structure
@@ -225,7 +225,7 @@ left_page:
 ### Validating a Prompt
 
 ```python
-from scripts.asset_validator import AssetValidator
+from asset_validator import AssetValidator
 
 validator = AssetValidator()
 violations = validator.validate_visual_prompt("Generate a photo of a child using a Macintosh Plus...")
@@ -343,7 +343,7 @@ pytest tests/
 
 Validate a complete spread:
 ```bash
-python scripts/compositor.py --validate config/layouts/spread_04_05.yaml
+python asset_validator.py --layout config/layouts/spread_04_05.yaml
 ```
 
 ## Project Status

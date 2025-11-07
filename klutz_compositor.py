@@ -792,7 +792,7 @@ Examples:
         spread.save(output_path, 'PNG')
         logger.info(f"Spread saved to: {output_path}")
 
-        print(f" Successfully composed spread: {output_path}")
+        print(f"✓ Successfully composed spread: {output_path}")
         print(f"  Dimensions: {spread.width}x{spread.height}px")
         print(f"  Print artifacts: {'enabled' if not args.no_artifacts else 'disabled'}")
 
@@ -800,7 +800,7 @@ Examples:
 
     except Exception as e:
         logger.error(f"Composition failed: {e}", exc_info=True)
-        print(f" Error: {e}", file=sys.stderr)
+        print(f"✗ Error: {e}", file=sys.stderr)
         return 1
 
 

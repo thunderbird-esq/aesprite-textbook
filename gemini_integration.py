@@ -435,11 +435,11 @@ def main():
                 f.write(prompt)
             logger.info(f"Wrote prompt to {output_file}")
 
-        print(f" Generated {len(prompts)} prompts in {output_dir}")
+        print(f"✓ Generated {len(prompts)} prompts in {output_dir}")
 
     except Exception as e:
         logger.error(f"Failed to process layout: {e}")
-        print(f" Error: {e}")
+        print(f"✗ Error: {e}")
         return 1
 
     return 0

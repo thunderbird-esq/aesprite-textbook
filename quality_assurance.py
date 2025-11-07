@@ -378,7 +378,7 @@ def main():
             print("\nIndividual Checks:")
 
             for check in report['checks']:
-                status = "" if check['passed'] else ""
+                status = "✓" if check['passed'] else "✗"
                 print(f"  {status} {check['check_name']}: {check['message']}")
 
             # Save to file if requested
@@ -391,7 +391,7 @@ def main():
 
         except Exception as e:
             logger.error(f"Report generation failed: {e}")
-            print(f" Error: {e}")
+            print(f"✗ Error: {e}")
             return 1
 
     else:
@@ -401,16 +401,16 @@ def main():
 
             # Color distribution
             color_ok = checker.check_color_distribution(args.spread)
-            print(f"  {'' if color_ok else ''} Color distribution")
+            print(f"  {'✓' if color_ok else '✗'} Color distribution")
 
             # Text legibility
             legibility_ok = checker.check_text_legibility(args.spread, args.min_contrast)
-            print(f"  {'' if legibility_ok else ''} Text legibility")
+            print(f"  {'✓' if legibility_ok else '✗'} Text legibility")
 
             # Period authenticity
             violations = checker.check_period_authenticity(args.spread)
             auth_ok = len(violations) == 0
-            print(f"  {'' if auth_ok else ''} Period authenticity")
+            print(f"  {'✓' if auth_ok else '✗'} Period authenticity")
 
             if not auth_ok:
                 for violation in violations:
@@ -423,7 +423,7 @@ def main():
 
         except Exception as e:
             logger.error(f"QA check failed: {e}")
-            print(f" Error: {e}")
+            print(f"✗ Error: {e}")
             return 1
 
 

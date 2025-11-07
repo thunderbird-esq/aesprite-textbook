@@ -205,7 +205,7 @@ def example_function(param1, param2):
     result = param1 + param2
     return result
 
-# Maximum line length: 88 characters (Black formatter)
+# Maximum line length: 100 characters (Black formatter)
 very_long_variable_name = some_function_call(
     argument1, argument2, argument3
 )

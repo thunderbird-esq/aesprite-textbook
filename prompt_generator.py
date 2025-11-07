@@ -524,9 +524,9 @@ def main():
         # Validation happens during generation
         try:
             _ = generator.generate_element_prompt(element_config)
-            print(f" Configuration valid: {args.config}")
+            print(f"✓ Configuration valid: {args.config}")
         except ValueError as e:
-            print(f" Validation failed: {e}")
+            print(f"✗ Validation failed: {e}")
             return 1
     else:
         # Generate prompt
@@ -541,11 +541,11 @@ def main():
                 f.write(xml_prompt)
 
             logger.info(f"Prompt written to: {output_path}")
-            print(f" Generated prompt: {output_path}")
+            print(f"✓ Generated prompt: {output_path}")
 
         except Exception as e:
             logger.error(f"Failed to generate prompt: {e}")
-            print(f" Error: {e}")
+            print(f"✗ Error: {e}")
             return 1
 
     return 0

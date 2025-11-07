@@ -535,10 +535,10 @@ def main():
         success = client.generate_asset(args.prompt, args.output)
 
         if success:
-            print(f" Generated: {args.output}")
+            print(f"✓ Generated: {args.output}")
             return 0
         else:
-            print(f" Failed to generate asset")
+            print(f"✗ Failed to generate asset")
             return 1
 
     elif args.prompt_dir and args.output_dir:
@@ -547,7 +547,7 @@ def main():
         logger.info(f"Found {len(prompt_files)} prompts in {args.prompt_dir}")
 
         if not prompt_files:
-            print(f" No XML prompts found in {args.prompt_dir}")
+            print(f"✗ No XML prompts found in {args.prompt_dir}")
             return 1
 
         stats = client.batch_generate(
@@ -556,7 +556,7 @@ def main():
             metadata_file=args.metadata
         )
 
-        print(f"\n Batch generation complete:")
+        print(f"\n✓ Batch generation complete:")
         print(f"  Total: {stats['total']}")
         print(f"  Success: {stats['success']}")
         print(f"  Failed: {stats['failed']}")

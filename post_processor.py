@@ -419,12 +419,12 @@ def main():
             Path(args.output).parent.mkdir(parents=True, exist_ok=True)
 
             result.save(args.output)
-            print(f" Processed: {args.output}")
+            print(f"✓ Processed: {args.output}")
             return 0
 
         except Exception as e:
             logger.error(f"Processing failed: {e}")
-            print(f" Error: {e}")
+            print(f"✗ Error: {e}")
             return 1
 
     elif args.input_dir and args.output_dir:
@@ -433,15 +433,15 @@ def main():
             count = processor.batch_process(args.input_dir, args.output_dir)
 
             if count > 0:
-                print(f" Processed {count} images to {args.output_dir}")
+                print(f"✓ Processed {count} images to {args.output_dir}")
                 return 0
             else:
-                print(f" No images processed")
+                print(f"✗ No images processed")
                 return 1
 
         except Exception as e:
             logger.error(f"Batch processing failed: {e}")
-            print(f" Error: {e}")
+            print(f"✗ Error: {e}")
             return 1
 
     else:

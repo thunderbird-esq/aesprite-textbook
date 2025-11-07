@@ -82,18 +82,20 @@ klutz-workbook-project/
 │   ├── fonts/
 │   ├── intermediate/  # New folder for intermediate results
 │   └── reference/
-├── scripts/
-│   ├── prompt_generator.py
-│   ├── asset_validator.py
-│   ├── compositor.py
-│   ├── post_processor.py
-│   └── logs/  # New folder for logs
 ├── prompts/
 │   ├── components/
 │   └── compiled/
-└── output/
-    ├── spreads/
-    └── validation/
+├── output/
+│   ├── spreads/
+│   └── validation/
+├── logs/              # New folder for logs
+├── prompt_generator.py    # Script to build prompts from templates
+├── asset_validator.py     # The "Period Police" validation script
+├── klutz_compositor.py    # The main Python composition engine
+├── post_processor.py      # Post-processing utilities
+├── gemini_integration.py  # Gemini API integration
+├── nano_banana_integration.py  # nano-banana model integration
+└── quality_assurance.py   # Quality assurance and validation
 Concrete Code Example:
 Python
 Copy
