@@ -10,24 +10,21 @@ artifacts and visual effects.
 Author: Team 3 - Compositor Engine Implementation
 """
 
-import sys
 import argparse
-import logging
-from pathlib import Path
-from typing import Dict, Tuple, Any, Optional
 import hashlib
+import logging
 import random
-import math
+import sys
+from pathlib import Path
+from typing import Any, Dict, Tuple
 
-import yaml
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
-
+import yaml
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -54,7 +51,7 @@ class KlutzCompositor:
         colors (Dict): Color palette mappings
     """
 
-    def __init__(self, config_path: str = 'config/master_config.yaml') -> None:
+    def __init__(self, config_path: str = "config/master_config.yaml") -> None:
         """
         Initialize the compositor with configuration.
 
@@ -71,28 +68,24 @@ class KlutzCompositor:
         if not config_file.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
         # Unpack critical specs from config
-        self.canvas_width = self.config['technical']['canvas_size'][0]
-        self.canvas_height = self.config['technical']['canvas_size'][1]
+        self.canvas_width = self.config["technical"]["canvas_size"][0]
+        self.canvas_height = self.config["technical"]["canvas_size"][1]
         self.spine_center = self.canvas_width // 2
-        self.spine_width = self.config['technical']['spine_width']
+        self.spine_width = self.config["technical"]["spine_width"]
         self.spine_start = self.spine_center - (self.spine_width // 2)
         self.spine_end = self.spine_center + (self.spine_width // 2)
 
         # Initialize color palettes
         self.colors = {
-            'aged_newsprint': self._hex_to_rgb(
-                self.config['aesthetic_rules']['paper_colors']['aged_newsprint']
+            "aged_newsprint": self._hex_to_rgb(
+                self.config["aesthetic_rules"]["paper_colors"]["aged_newsprint"]
             ),
-            'white': self._hex_to_rgb(
-                self.config['aesthetic_rules']['paper_colors']['white']
-            ),
-            'kraft': self._hex_to_rgb(
-                self.config['aesthetic_rules']['paper_colors']['kraft']
-            )
+            "white": self._hex_to_rgb(self.config["aesthetic_rules"]["paper_colors"]["white"]),
+            "kraft": self._hex_to_rgb(self.config["aesthetic_rules"]["paper_colors"]["kraft"]),
         }
 
         logger.info(f"Canvas: {self.canvas_width}x{self.canvas_height}px")
@@ -109,8 +102,8 @@ class KlutzCompositor:
         Returns:
             Tuple of (R, G, B) values
         """
-        hex_color = hex_color.lstrip('#')
-        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        hex_color = hex_color.lstrip("#")
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
     def get_chaos_rotation(self, element_id: str, max_rotation: float) -> float:
         """
@@ -138,7 +131,7 @@ class KlutzCompositor:
         logger.debug(f"Element '{element_id}': rotation={rotation:.2f}�")
         return rotation
 
-    def create_base_canvas(self, template: str = 'aged_newsprint') -> Image.Image:
+    def create_base_canvas(self, template: str = "aged_newsprint") -> Image.Image:
         """
         Create the base canvas with paper texture, binding, and lighting.
 
@@ -160,23 +153,16 @@ class KlutzCompositor:
         logger.info(f"Creating base canvas with template: {template}")
 
         # Create solid color background
-        canvas = Image.new(
-            'RGB',
-            (self.canvas_width, self.canvas_height),
-            self.colors[template]
-        )
+        canvas = Image.new("RGB", (self.canvas_width, self.canvas_height), self.colors[template])
 
         # Generate paper texture using numpy noise
         logger.debug("Generating paper texture")
-        texture_noise = np.random.normal(
-            128, 20,
-            (self.canvas_height, self.canvas_width, 3)
-        )
+        texture_noise = np.random.normal(128, 20, (self.canvas_height, self.canvas_width, 3))
         texture = Image.fromarray(texture_noise.astype(np.uint8))
         texture = texture.filter(ImageFilter.GaussianBlur(radius=0.5))
 
         # Blend texture onto canvas
-        texture_opacity = self.config['aesthetic_rules']['texture_opacity']['global']
+        texture_opacity = self.config["aesthetic_rules"]["texture_opacity"]["global"]
         canvas = Image.blend(canvas, texture, alpha=texture_opacity)
 
         # Add spiral binding
@@ -206,12 +192,12 @@ class KlutzCompositor:
         """
         logger.debug("Adding spiral binding")
 
-        draw = ImageDraw.Draw(canvas, 'RGBA')
+        draw = ImageDraw.Draw(canvas, "RGBA")
 
         # Get binding specs from config
-        hole_diameter = self.config['technical']['binding']['hole_diameter']
-        hole_spacing = self.config['technical']['binding']['hole_spacing']
-        coil_color = tuple(self.config['technical']['binding']['coil_color'])
+        hole_diameter = self.config["technical"]["binding"]["hole_diameter"]
+        hole_spacing = self.config["technical"]["binding"]["hole_spacing"]
+        coil_color = tuple(self.config["technical"]["binding"]["coil_color"])
 
         # Calculate pitch and number of holes
         pitch = hole_diameter + hole_spacing
@@ -230,35 +216,18 @@ class KlutzCompositor:
                 self.spine_center - hole_diameter // 2,
                 y,
                 self.spine_center + hole_diameter // 2,
-                y + hole_diameter
+                y + hole_diameter,
             ]
 
             # Hole background (paper color)
-            draw.ellipse(hole_rect, fill=self.colors['aged_newsprint'])
+            draw.ellipse(hole_rect, fill=self.colors["aged_newsprint"])
 
             # Inner shadow arc (simulates depth)
-            draw.arc(
-                hole_rect,
-                start=135,
-                end=315,
-                fill=(180, 180, 180, 200),
-                width=3
-            )
+            draw.arc(hole_rect, start=135, end=315, fill=(180, 180, 180, 200), width=3)
 
             # Draw plastic coil segment
-            coil_rect = [
-                hole_rect[0] + 5,
-                hole_rect[1] + 5,
-                hole_rect[2] - 5,
-                hole_rect[3] - 5
-            ]
-            draw.arc(
-                coil_rect,
-                start=45,
-                end=225,
-                fill=coil_color,
-                width=10
-            )
+            coil_rect = [hole_rect[0] + 5, hole_rect[1] + 5, hole_rect[2] - 5, hole_rect[3] - 5]
+            draw.arc(coil_rect, start=45, end=225, fill=coil_color, width=10)
 
         return canvas
 
@@ -279,12 +248,12 @@ class KlutzCompositor:
         logger.debug("Adding page curvature shadow")
 
         # Create shadow mask
-        shadow_mask = Image.new('L', canvas.size, 0)
+        shadow_mask = Image.new("L", canvas.size, 0)
         draw = ImageDraw.Draw(shadow_mask)
 
         # Shadow extends 75% of spine width on each side
         shadow_width = int(self.spine_width * 0.75)
-        spine_shadow_opacity = self.config['print_simulation']['spine_shadow']
+        spine_shadow_opacity = self.config["print_simulation"]["spine_shadow"]
 
         # Draw gradient from spine edges
         for i in range(shadow_width):
@@ -293,18 +262,14 @@ class KlutzCompositor:
 
             # Left side of spine
             draw.line(
-                (self.spine_start + i, 0, self.spine_start + i, self.canvas_height),
-                fill=alpha
+                (self.spine_start + i, 0, self.spine_start + i, self.canvas_height), fill=alpha
             )
 
             # Right side of spine
-            draw.line(
-                (self.spine_end - i, 0, self.spine_end - i, self.canvas_height),
-                fill=alpha
-            )
+            draw.line((self.spine_end - i, 0, self.spine_end - i, self.canvas_height), fill=alpha)
 
         # Composite shadow onto canvas
-        shadow_layer = Image.new('RGB', canvas.size, (0, 0, 0))
+        shadow_layer = Image.new("RGB", canvas.size, (0, 0, 0))
         return Image.composite(shadow_layer, canvas, shadow_mask)
 
     def load_and_process_asset(self, asset_config: Dict[str, Any]) -> Image.Image:
@@ -332,7 +297,7 @@ class KlutzCompositor:
         Raises:
             FileNotFoundError: If asset file doesn't exist
         """
-        asset_path = Path(self.config['assets']['paths']['generated']) / asset_config['asset']
+        asset_path = Path(self.config["assets"]["paths"]["generated"]) / asset_config["asset"]
 
         if not asset_path.exists():
             raise FileNotFoundError(f"Asset not found: {asset_path}")
@@ -340,32 +305,26 @@ class KlutzCompositor:
         logger.debug(f"Loading asset: {asset_config['asset']}")
 
         # Load as RGBA for transparency support
-        asset = Image.open(asset_path).convert('RGBA')
+        asset = Image.open(asset_path).convert("RGBA")
 
         # Resize if dimensions specified
-        if 'dimensions' in asset_config:
-            new_size = tuple(asset_config['dimensions'])
+        if "dimensions" in asset_config:
+            new_size = tuple(asset_config["dimensions"])
             logger.debug(f"Resizing to {new_size}")
             asset = asset.resize(new_size, Image.Resampling.LANCZOS)
 
         # Rotate using chaos rotation
-        if 'rotation' in asset_config:
-            rotation = self.get_chaos_rotation(
-                asset_config['id'],
-                asset_config['rotation']
-            )
+        if "rotation" in asset_config:
+            rotation = self.get_chaos_rotation(asset_config["id"], asset_config["rotation"])
             logger.debug(f"Rotating {rotation:.2f}�")
             asset = asset.rotate(
-                rotation,
-                expand=True,
-                fillcolor=(0, 0, 0, 0),
-                resample=Image.Resampling.BICUBIC
+                rotation, expand=True, fillcolor=(0, 0, 0, 0), resample=Image.Resampling.BICUBIC
             )
 
         # Add border if specified (format: "4px solid #FF6600")
-        if 'border' in asset_config:
-            border_spec = asset_config['border']
-            width = int(border_spec.split('px')[0])
+        if "border" in asset_config:
+            border_spec = asset_config["border"]
+            width = int(border_spec.split("px")[0])
 
             # Extract hex color (last 7 chars: #RRGGBB)
             hex_color = border_spec[-7:]
@@ -374,11 +333,7 @@ class KlutzCompositor:
             logger.debug(f"Adding {width}px border in {hex_color}")
 
             # Create bordered image
-            bordered = Image.new(
-                'RGBA',
-                (asset.width + width * 2, asset.height + width * 2),
-                color
-            )
+            bordered = Image.new("RGBA", (asset.width + width * 2, asset.height + width * 2), color)
             bordered.paste(asset, (width, width), asset)
             asset = bordered
 
@@ -414,24 +369,28 @@ class KlutzCompositor:
         Raises:
             FileNotFoundError: If font file doesn't exist
         """
-        logger.debug(f"Rendering text block: font={text_config['font']}, size={text_config['size']}")
+        logger.debug(
+            f"Rendering text block: font={text_config['font']}, size={text_config['size']}"
+        )
 
         # Load font
-        font_path = Path(self.config['assets']['paths']['fonts']) / f"{text_config['font']}.ttf"
+        font_path = Path(self.config["assets"]["paths"]["fonts"]) / f"{text_config['font']}.ttf"
 
         if not font_path.exists():
             raise FileNotFoundError(f"Font not found: {font_path}")
 
-        font = ImageFont.truetype(str(font_path), text_config['size'])
+        font = ImageFont.truetype(str(font_path), text_config["size"])
 
         # Get text color (default black)
-        text_color = text_config.get('color', '#000000')
+        text_color = text_config.get("color", "#000000")
         if isinstance(text_color, str):
             text_color = self._hex_to_rgb(text_color)
 
         # Word wrapping
-        max_width = text_config['dimensions'][0] - 2 * self.config['typography']['word_wrap_padding']
-        lines = text_config['content'].strip().split('\n')
+        max_width = (
+            text_config["dimensions"][0] - 2 * self.config["typography"]["word_wrap_padding"]
+        )
+        lines = text_config["content"].strip().split("\n")
         wrapped_lines = []
 
         for line in lines:
@@ -439,7 +398,7 @@ class KlutzCompositor:
                 wrapped_lines.append("")
                 continue
 
-            words = line.split(' ')
+            words = line.split(" ")
             current_line = ""
 
             for word in words:
@@ -461,21 +420,16 @@ class KlutzCompositor:
 
         # Calculate line height
         line_height = text_config.get(
-            'leading',
-            text_config['size'] + self.config['typography']['default_leading']
+            "leading", text_config["size"] + self.config["typography"]["default_leading"]
         )
 
         # Create text image
         text_height = len(wrapped_lines) * line_height
-        text_img = Image.new(
-            'RGBA',
-            (text_config['dimensions'][0], text_height),
-            (0, 0, 0, 0)
-        )
+        text_img = Image.new("RGBA", (text_config["dimensions"][0], text_height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(text_img)
 
         # Draw each line
-        padding = self.config['typography']['word_wrap_padding']
+        padding = self.config["typography"]["word_wrap_padding"]
         y = 0
         for line in wrapped_lines:
             draw.text((padding, y), line, font=font, fill=text_color)
@@ -489,11 +443,7 @@ class KlutzCompositor:
         return text_img
 
     def composite_element(
-        self,
-        canvas: Image.Image,
-        element: Image.Image,
-        position: Tuple[int, int],
-        element_id: str
+        self, canvas: Image.Image, element: Image.Image, position: Tuple[int, int], element_id: str
     ) -> Image.Image:
         """
         Paste an element onto canvas, checking for spine intrusion.
@@ -517,10 +467,7 @@ class KlutzCompositor:
         element_right = x + element.width
         element_left = x
 
-        intrudes = (
-            element_left < self.spine_end and
-            element_right > self.spine_start
-        )
+        intrudes = element_left < self.spine_end and element_right > self.spine_start
 
         if intrudes:
             logger.warning(
@@ -529,7 +476,7 @@ class KlutzCompositor:
             )
 
             # Auto-adjust position
-            buffer = self.config['layout']['spine_intrusion_buffer']
+            buffer = self.config["layout"]["spine_intrusion_buffer"]
 
             if x < self.spine_center:
                 # Element is on left page - move left
@@ -566,23 +513,23 @@ class KlutzCompositor:
         logger.info("Applying 1996 print artifacts")
 
         # Convert to RGB if needed
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         # 1. CMYK Misregistration
         logger.debug("Applying CMYK misregistration")
         r, g, b = image.split()
 
         # Get shift values from config
-        m_shift = self.config['print_simulation']['cmyk_shift']['magenta']
-        y_shift = self.config['print_simulation']['cmyk_shift']['yellow']
+        m_shift = self.config["print_simulation"]["cmyk_shift"]["magenta"]
+        y_shift = self.config["print_simulation"]["cmyk_shift"]["yellow"]
 
         # Shift red channel (magenta component)
         r_shifted = r.transform(
             image.size,
             Image.Transform.AFFINE,
             (1, 0, m_shift[0], 0, 1, m_shift[1]),
-            resample=Image.Resampling.BILINEAR
+            resample=Image.Resampling.BILINEAR,
         )
 
         # Shift blue channel (yellow component)
@@ -590,20 +537,20 @@ class KlutzCompositor:
             image.size,
             Image.Transform.AFFINE,
             (1, 0, y_shift[0], 0, 1, y_shift[1]),
-            resample=Image.Resampling.BILINEAR
+            resample=Image.Resampling.BILINEAR,
         )
 
         image = Image.merge("RGB", (r_shifted, g, b_shifted))
 
         # 2. Dot Gain (gamma adjustment for ink spread)
         logger.debug("Applying dot gain")
-        dot_gain = self.config['print_simulation']['dot_gain']
+        dot_gain = self.config["print_simulation"]["dot_gain"]
         enhancer = ImageEnhance.Brightness(image)
         image = enhancer.enhance(dot_gain)
 
         # 3. Vignette (radial light falloff)
         logger.debug("Applying vignette")
-        vignette_intensity = self.config['print_simulation']['vignette']
+        vignette_intensity = self.config["print_simulation"]["vignette"]
 
         # Create radial gradient mask
         vignette_mask = Image.new("L", image.size, 255)
@@ -621,27 +568,18 @@ class KlutzCompositor:
             alpha = int(255 * (1 - vignette_intensity * progress))
 
             draw.ellipse(
-                [
-                    center_x - radius,
-                    center_y - radius,
-                    center_x + radius,
-                    center_y + radius
-                ],
-                fill=alpha
+                [center_x - radius, center_y - radius, center_x + radius, center_y + radius],
+                fill=alpha,
             )
 
         # Apply vignette
-        vignette_layer = Image.new('RGB', image.size, (0, 0, 0))
+        vignette_layer = Image.new("RGB", image.size, (0, 0, 0))
         image = Image.composite(image, vignette_layer, vignette_mask)
 
         logger.info("Print artifacts applied successfully")
         return image
 
-    def compose_spread(
-        self,
-        layout_path: str,
-        apply_artifacts: bool = True
-    ) -> Image.Image:
+    def compose_spread(self, layout_path: str, apply_artifacts: bool = True) -> Image.Image:
         """
         Main method to compose a complete two-page spread from a YAML file.
 
@@ -669,31 +607,31 @@ class KlutzCompositor:
         if not layout_file.exists():
             raise FileNotFoundError(f"Layout file not found: {layout_path}")
 
-        with open(layout_file, 'r') as f:
+        with open(layout_file, "r") as f:
             layout = yaml.safe_load(f)
 
         # Create base canvas
-        template = layout.get('canvas', 'aged_newsprint')
+        template = layout.get("canvas", "aged_newsprint")
         canvas = self.create_base_canvas(template)
 
         # Process elements in order (left page, then right page)
-        for page_key in ['left_page', 'right_page']:
+        for page_key in ["left_page", "right_page"]:
             logger.info(f"Processing {page_key}")
 
             page_data = layout.get(page_key, {})
-            elements = page_data.get('elements', [])
+            elements = page_data.get("elements", [])
 
             logger.info(f"Found {len(elements)} elements on {page_key}")
 
             for element in elements:
-                element_id = element.get('id', 'unknown')
-                element_type = element.get('type', 'unknown')
+                element_id = element.get("id", "unknown")
+                element_type = element.get("type", "unknown")
 
                 logger.info(f"Processing element '{element_id}' (type: {element_type})")
 
                 try:
                     # Determine if text or graphic
-                    if element_type.startswith('text_'):
+                    if element_type.startswith("text_"):
                         # Render text programmatically
                         element_img = self.render_text_block(element)
                     else:
@@ -701,13 +639,8 @@ class KlutzCompositor:
                         element_img = self.load_and_process_asset(element)
 
                     # Composite onto canvas
-                    position = tuple(element['position'])
-                    canvas = self.composite_element(
-                        canvas,
-                        element_img,
-                        position,
-                        element_id
-                    )
+                    position = tuple(element["position"])
+                    canvas = self.composite_element(canvas, element_img, position, element_id)
 
                 except Exception as e:
                     logger.error(f"Failed to process element '{element_id}': {e}")
@@ -730,7 +663,7 @@ def main():
         python klutz_compositor.py <layout.yaml> <output.png> --no-artifacts
     """
     parser = argparse.ArgumentParser(
-        description='Compose Klutz workbook page spreads from YAML layouts',
+        description="Compose Klutz workbook page spreads from YAML layouts",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -742,32 +675,22 @@ Examples:
 
   # Use custom config file
   python klutz_compositor.py layout.yaml output.png --config my_config.yaml
-        """
+        """,
     )
 
+    parser.add_argument("layout", help="Path to layout YAML file")
+    parser.add_argument("output", help="Path to output PNG file")
     parser.add_argument(
-        'layout',
-        help='Path to layout YAML file'
+        "--no-artifacts",
+        action="store_true",
+        help="Skip print artifact simulation (faster rendering)",
     )
     parser.add_argument(
-        'output',
-        help='Path to output PNG file'
+        "--config",
+        default="config/master_config.yaml",
+        help="Path to master config file (default: config/master_config.yaml)",
     )
-    parser.add_argument(
-        '--no-artifacts',
-        action='store_true',
-        help='Skip print artifact simulation (faster rendering)'
-    )
-    parser.add_argument(
-        '--config',
-        default='config/master_config.yaml',
-        help='Path to master config file (default: config/master_config.yaml)'
-    )
-    parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose debug logging'
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose debug logging")
 
     args = parser.parse_args()
 
@@ -780,16 +703,13 @@ Examples:
         compositor = KlutzCompositor(config_path=args.config)
 
         # Compose spread
-        spread = compositor.compose_spread(
-            args.layout,
-            apply_artifacts=not args.no_artifacts
-        )
+        spread = compositor.compose_spread(args.layout, apply_artifacts=not args.no_artifacts)
 
         # Save output
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        spread.save(output_path, 'PNG')
+        spread.save(output_path, "PNG")
         logger.info(f"Spread saved to: {output_path}")
 
         print(f"✓ Successfully composed spread: {output_path}")
@@ -804,5 +724,5 @@ Examples:
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

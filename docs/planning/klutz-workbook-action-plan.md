@@ -110,12 +110,12 @@ canvas_aged_newsprint:
     <rotation>-2 degrees</rotation>
   </appearance>
   <positive_prompt>
-    A flat, solid yellow rectangle with a thick black border and 
-    hard-edged drop shadow offset to the bottom-right. No gradients, 
+    A flat, solid yellow rectangle with a thick black border and
+    hard-edged drop shadow offset to the bottom-right. No gradients,
     no soft edges, no modern effects. 1996 desktop publishing aesthetic.
   </positive_prompt>
   <negative_prompt>
-    soft shadows, blur, gradients, modern design, rounded corners, 
+    soft shadows, blur, gradients, modern design, rounded corners,
     3D effects, bevels, glows, transparency
   </negative_prompt>
 </element_definition>
@@ -136,15 +136,15 @@ canvas_aged_newsprint:
     </lighting>
   </technical_specs>
   <positive_prompt>
-    High-angle 35mm film photograph of a 10-year-old's hand gripping 
-    a beige Apple M0100 mouse (rectangular, one button). Shot on 
-    Kodak Gold 400 film with visible grain. Bright, even lighting 
-    from softboxes. Clean blue mousepad background. Sharp focus on 
+    High-angle 35mm film photograph of a 10-year-old's hand gripping
+    a beige Apple M0100 mouse (rectangular, one button). Shot on
+    Kodak Gold 400 film with visible grain. Bright, even lighting
+    from softboxes. Clean blue mousepad background. Sharp focus on
     the mouse button and child's index finger position.
   </positive_prompt>
   <negative_prompt>
-    modern optical mouse, gaming mouse, wireless, LED lights, 
-    adult hands, dramatic lighting, shallow depth of field, 
+    modern optical mouse, gaming mouse, wireless, LED lights,
+    adult hands, dramatic lighting, shallow depth of field,
     digital photography, clean grain-free image
   </negative_prompt>
 </element_definition>
@@ -161,17 +161,17 @@ def render_text_block(config):
     """
     from PIL import Image, ImageDraw, ImageFont
     import numpy as np
-    
+
     # Load font
     font = ImageFont.truetype(
-        f"fonts/{config['font_name']}.ttf", 
+        f"fonts/{config['font_name']}.ttf",
         config['font_size_pt']
     )
-    
+
     # Create transparent canvas
     img = Image.new('RGBA', config['dimensions'], (0,0,0,0))
     draw = ImageDraw.Draw(img)
-    
+
     # Apply text with proper leading
     y_position = config['padding']
     for line in config['text_content'].split('\n'):
@@ -182,17 +182,17 @@ def render_text_block(config):
             fill=config['font_color']
         )
         y_position += config['leading_pt']
-    
+
     # Apply paper texture displacement
     if config.get('apply_texture'):
         texture = Image.open('textures/newsprint_grain.png')
         # Apply subtle displacement based on texture luminance
         img = apply_displacement_map(img, texture, strength=2)
-    
+
     # Apply CMYK misregistration
     if config.get('apply_misregistration'):
         img = apply_cmyk_shift(img, magenta_x=1, yellow_y=-1)
-    
+
     return img
 ```
 
@@ -206,7 +206,7 @@ def render_text_block(config):
 spread_04_05:
   template: "workshop_layout"
   canvas: "aged_newsprint"
-  
+
   left_page:
     elements:
       - id: "L_headline_pixelart_01"
@@ -217,7 +217,7 @@ spread_04_05:
         font: "Chicago"
         size: 48
         color: "#000000"
-        
+
       - id: "L_photo_mouse_01"
         type: "graphic_photo_instructional"
         asset: "photo_mouse_hand_01.png"
@@ -225,7 +225,7 @@ spread_04_05:
         dimensions: [600, 450]
         rotation: 2
         border: "4px solid #FF6600"
-        
+
       - id: "L_textcontainer_intro_01"
         type: "container_featurebox"
         position: [180, 800]
@@ -234,16 +234,16 @@ spread_04_05:
         background: "#FFD700"
         text:
           content: |
-            Time to make some pixel art! Remember those 
-            awesome Nintendo characters? They're just 
-            colored squares arranged in a grid. You're 
-            going to learn the same tricks the pros use, 
-            but way easier because you're using Aseprite 
+            Time to make some pixel art! Remember those
+            awesome Nintendo characters? They're just
+            colored squares arranged in a grid. You're
+            going to learn the same tricks the pros use,
+            but way easier because you're using Aseprite
             instead of typing mysterious code!
           font: "Helvetica"
           size: 16
           leading: 22
-          
+
       - id: "L_splat_tip_01"
         type: "graphic_splat_container"
         position: [950, 650]
@@ -251,7 +251,7 @@ spread_04_05:
         rotation: 15
         color: "#F57D0D"  # Nickelodeon Orange
         content: "PRO TIP!"
-        
+
   right_page:
     elements:
       - id: "R_gui_aseprite_01"
@@ -259,7 +259,7 @@ spread_04_05:
         position: [1950, 200]
         dimensions: [1200, 800]
         content: "Aseprite color picker interface"
-        
+
       - id: "R_pixelart_mario_01"
         type: "graphic_pixelart"
         position: [2100, 1100]
@@ -267,7 +267,7 @@ spread_04_05:
         rotation: -5
         magnification: 8
         palette: "NES_limited"
-        
+
   global_elements:
     - id: "spiral_binding"
       type: "graphic_spiral_binding"
@@ -299,8 +299,8 @@ VALIDATION_RULES = {
 ### 4.1 System Prompt for Gemini
 
 ```markdown
-You are a specialized prompt engineer for generating a 1996 Klutz Press 
-computer graphics workbook. Your task is to transform layout configurations 
+You are a specialized prompt engineer for generating a 1996 Klutz Press
+computer graphics workbook. Your task is to transform layout configurations
 into hyper-specific XML prompts for the nano-banana image generation model.
 
 CRITICAL RULES:
@@ -337,13 +337,13 @@ For each element, generate an XML block with:
     <type>${ELEMENT_TYPE}</type>
     <page>${PAGE_SIDE}</page>
   </metadata>
-  
+
   <geometry>
     <position x="${X}" y="${Y}"/>
     <dimensions width="${WIDTH}" height="${HEIGHT}"/>
     <rotation degrees="${ROTATION}"/>
   </geometry>
-  
+
   <visual_properties>
     <colors>
       <primary>${PRIMARY_COLOR}</primary>
@@ -355,7 +355,7 @@ For each element, generate an XML block with:
       <texture overlay="newsprint_grain" opacity="0.08"/>
     </effects>
   </visual_properties>
-  
+
   <generation_prompt>
     <positive>${DETAILED_POSITIVE_PROMPT}</positive>
     <negative>${COMPREHENSIVE_NEGATIVE_PROMPT}</negative>
@@ -396,12 +396,12 @@ class KlutzCompositor:
         self.layout = yaml.safe_load(open(layout_yaml))
         self.assets = assets_dir
         self.canvas = self.load_canvas()
-        
+
     def compose_spread(self):
         """Main composition pipeline"""
         # Start with base canvas
         spread = self.canvas.copy()
-        
+
         # Add elements in z-order
         for page in ['left_page', 'right_page']:
             for element in self.layout[page]['elements']:
@@ -410,31 +410,31 @@ class KlutzCompositor:
                 asset = self.apply_border(asset, element.get('border'))
                 asset = self.apply_shadow(asset, element.get('shadow'))
                 spread = self.composite_element(spread, asset, element['position'])
-        
+
         # Add global elements (spiral binding)
         spread = self.add_spiral_binding(spread)
-        
+
         # Apply post-processing
         spread = self.apply_print_artifacts(spread)
-        
+
         return spread
-    
+
     def apply_print_artifacts(self, image):
         """Apply 1996 print characteristics"""
         # CMYK misregistration
         image = self.shift_color_channel(image, 'magenta', x_offset=1)
         image = self.shift_color_channel(image, 'yellow', y_offset=-1)
-        
+
         # Dot gain simulation
         image = self.adjust_gamma(image, 0.95)
-        
+
         # Paper texture overlay
         texture = Image.open('textures/uncoated_paper.png')
         image = Image.blend(image, texture, alpha=0.08)
-        
+
         # Vignette
         image = self.add_vignette(image, opacity=0.15)
-        
+
         return image
 ```
 
@@ -512,7 +512,7 @@ Follow the exact XML schema provided. Be hyper-specific about:
     <color_space>sRGB</color_space>
     <bit_depth>24</bit_depth>
   </image_specifications>
-  
+
   <photographic_parameters>
     <film_stock>Kodak Gold 400</film_stock>
     <grain_intensity>moderate</grain_intensity>
@@ -524,7 +524,7 @@ Follow the exact XML schema provided. Be hyper-specific about:
     <lens>100mm macro</lens>
     <aperture>f/11</aperture>
   </photographic_parameters>
-  
+
   <subject_details>
     <primary>child hand, age 8-10, Caucasian, slight tan</primary>
     <grip>index finger on mouse button, natural grip</grip>
@@ -536,7 +536,7 @@ Follow the exact XML schema provided. Be hyper-specific about:
     </mouse>
     <background>royal blue mousepad, fabric surface, clean</background>
   </subject_details>
-  
+
   <lighting_setup>
     <key_light>
       <type>24x36 inch softbox</type>
@@ -553,28 +553,28 @@ Follow the exact XML schema provided. Be hyper-specific about:
     </fill_light>
     <background_light>none</background_light>
   </lighting_setup>
-  
+
   <positive_prompt>
-    Professional instructional photograph circa 1996, child's hand 
-    (age 8-10) demonstrating proper grip on beige Apple Macintosh 
-    Plus mouse model M0100, rectangular single-button mouse with 
-    visible cable, index finger positioned on button, natural 
-    child-like grip, shot on Kodak Gold 400 35mm film, moderate 
-    grain visible, slight warm color cast in highlights, clean 
-    royal blue fabric mousepad, high-angle view showing full mouse 
-    and partial hand, sharp focus throughout, even lighting from 
-    softbox creating soft shadows, educational photography style, 
+    Professional instructional photograph circa 1996, child's hand
+    (age 8-10) demonstrating proper grip on beige Apple Macintosh
+    Plus mouse model M0100, rectangular single-button mouse with
+    visible cable, index finger positioned on button, natural
+    child-like grip, shot on Kodak Gold 400 35mm film, moderate
+    grain visible, slight warm color cast in highlights, clean
+    royal blue fabric mousepad, high-angle view showing full mouse
+    and partial hand, sharp focus throughout, even lighting from
+    softbox creating soft shadows, educational photography style,
     bright and cheerful mood
   </positive_prompt>
-  
+
   <negative_prompt>
-    modern optical mouse, wireless mouse, gaming mouse, RGB lighting, 
-    adult hands, teenager hands, dramatic lighting, artistic shadows, 
-    shallow depth of field, bokeh, digital photography, clean 
-    grain-free image, HDR, post-processing effects, color grading, 
-    Instagram filters, black and white, monochrome, low key lighting, 
-    dark mood, professional hand model, manicured nails, jewelry, 
-    watches, modern technology, touchpad, trackball, Windows mouse, 
+    modern optical mouse, wireless mouse, gaming mouse, RGB lighting,
+    adult hands, teenager hands, dramatic lighting, artistic shadows,
+    shallow depth of field, bokeh, digital photography, clean
+    grain-free image, HDR, post-processing effects, color grading,
+    Instagram filters, black and white, monochrome, low key lighting,
+    dark mood, professional hand model, manicured nails, jewelry,
+    watches, modern technology, touchpad, trackball, Windows mouse,
     two-button mouse, scroll wheel
   </negative_prompt>
 </nano_banana_prompt>
@@ -643,7 +643,7 @@ FORBIDDEN_TERMS = [
 ]
 
 def validate_prompt(prompt_text):
-    violations = [term for term in FORBIDDEN_TERMS 
+    violations = [term for term in FORBIDDEN_TERMS
                   if term.lower() in prompt_text.lower()]
     if violations:
         raise ValueError(f"Anachronistic terms detected: {violations}")
@@ -657,12 +657,12 @@ project:
   name: "Klutz Press Computer Graphics Workbook"
   year: 1996
   pages: 20
-  
+
 technical:
   canvas_size: [3400, 2200]
   dpi: 300
   color_space: "sRGB"
-  
+
 aesthetic_rules:
   color_distribution:
     klutz_primary: 0.70
@@ -675,7 +675,7 @@ aesthetic_rules:
   texture_opacity:
     global: 0.08
     embossed: 0.12
-    
+
 print_simulation:
   cmyk_shift:
     magenta: [1, 0]
@@ -683,7 +683,7 @@ print_simulation:
   dot_gain: 0.95
   vignette: 0.15
   spine_shadow: 0.20
-  
+
 validation:
   enforce_period_accuracy: true
   check_color_ratios: true

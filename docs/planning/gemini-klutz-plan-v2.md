@@ -484,7 +484,7 @@ XML
     <dimensions width="600" height="450" dpi="300"/>
     <color_space>sRGB</color_space>
   </image_specifications>
-  
+
   <photographic_parameters>
     <film_stock>Kodak Gold 400</film_stock>
     <grain_intensity>moderate</grain_intensity>
@@ -495,7 +495,7 @@ XML
     <lens>100mm macro</lens>
     <aperture>f/11</aperture>
   </photographic_parameters>
-  
+
   <subject_details>
     <primary>child hand, age 8-10</primary>
     <grip>index finger on mouse button, natural grip</grip>
@@ -506,7 +506,7 @@ XML
     </mouse>
     <background>royal blue mousepad, fabric surface, clean</background>
   </subject_details>
-  
+
   <lighting_setup>
     <key_light>
       <type>24x36 inch softbox</type>
@@ -520,11 +520,11 @@ XML
       <ratio>1:2 relative to key</ratio>
     </fill_light>
   </lighting_setup>
-  
+
   <positive_prompt>
     Professional instructional photograph circa 1996, child's hand (age 8-10) demonstrating proper grip on beige Apple Macintosh Plus mouse model M0100, rectangular single-button mouse with visible cable, index finger positioned on button, shot on Kodak Gold 400 35mm film, moderate grain visible, slight warm color cast, clean royal blue fabric mousepad, high-angle view, sharp focus throughout, even lighting from softbox creating soft shadows, educational photography style, bright and cheerful mood
   </positive_prompt>
-  
+
   <negative_prompt>
     modern optical mouse, wireless mouse, gaming mouse, RGB lighting, adult hands, dramatic lighting, shallow depth of field, bokeh, digital photography, clean grain-free image, HDR, post-processing effects, color grading, Instagram filters, black and white, monochrome, low key lighting, dark mood, professional hand model, manicured nails, jewelry, watches, modern technology, touchpad, trackball, Windows mouse, two-button mouse, scroll wheel
   </negative_prompt>
@@ -592,12 +592,12 @@ project:
   name: "Klutz Press Computer Graphics Workbook"
   year: 1996
   pages: 20
-  
+
 technical:
   canvas_size: [3400, 2200]
   dpi: 300
   color_space: "sRGB"
-  
+
 aesthetic_rules:
   color_distribution:
     klutz_primary: 0.70
@@ -609,7 +609,7 @@ aesthetic_rules:
     photos: 10
   texture_opacity:
     global: 0.08
-    
+
 print_simulation:
   cmyk_shift:
     magenta: [1, 0]
@@ -617,7 +617,7 @@ print_simulation:
   dot_gain: 0.95
   vignette: 0.15
   spine_shadow: 0.20
-  
+
 validation:
   enforce_period_accuracy: true
   check_color_ratios: true
@@ -627,7 +627,3 @@ Conclusion
 This action plan transforms an ambitious creative concept into a practical, modular system. It leverages AI for what it excels at—creative component generation—while using code for what it excels at—precision layout, typography, and repeatable processes. By separating these concerns and enforcing authenticity at every step, this pipeline creates a robust and scalable method for producing the workbook.
 
 The key insight is that AI can be directed to create period-authentic visuals, even for a modern subject, as long as the distinction between content and style is rigorously maintained. The machine only understands specificity; every quantified specification is a step toward success.
-
-
-
-

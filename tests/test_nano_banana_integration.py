@@ -11,7 +11,8 @@ Tests include:
 
 import pytest
 from PIL import Image
-from test_framework import MockNanoBananaClient, create_test_sprite
+
+from test_framework import create_test_sprite
 
 
 @pytest.mark.api
@@ -26,7 +27,7 @@ class TestNanoBananaClientBasics:
 
     def test_client_has_generate_method(self, mock_nano_banana):
         """Test that client has generate_image method."""
-        assert hasattr(mock_nano_banana, 'generate_image')
+        assert hasattr(mock_nano_banana, "generate_image")
         assert callable(mock_nano_banana.generate_image)
 
 
@@ -167,12 +168,7 @@ class TestErrorHandling:
 
     def test_handle_invalid_dimensions(self):
         """Test handling of invalid dimensions."""
-        invalid_sizes = [
-            (0, 32),
-            (32, 0),
-            (-10, 32),
-            (32, -10)
-        ]
+        invalid_sizes = [(0, 32), (32, 0), (-10, 32), (32, -10)]
 
         for width, height in invalid_sizes:
             is_valid = width > 0 and height > 0
@@ -182,10 +178,7 @@ class TestErrorHandling:
         """Test handling of very large dimensions."""
         max_size = 2048
 
-        large_sizes = [
-            (4096, 4096),
-            (8192, 8192)
-        ]
+        large_sizes = [(4096, 4096), (8192, 8192)]
 
         for width, height in large_sizes:
             is_too_large = width > max_size or height > max_size
@@ -204,12 +197,7 @@ class TestParameterizedGeneration:
 
         assert image.size == (width, height)
 
-    @pytest.mark.parametrize("prompt", [
-        "A computer",
-        "A keyboard",
-        "A mouse",
-        "A monitor"
-    ])
+    @pytest.mark.parametrize("prompt", ["A computer", "A keyboard", "A mouse", "A monitor"])
     def test_generation_with_different_prompts(self, mock_nano_banana, prompt):
         """Test generation with different prompts."""
         image = mock_nano_banana.generate_image(prompt)
@@ -277,12 +265,7 @@ class TestNanoBananaIntegrationWorkflow:
 
     def test_batch_image_generation(self, mock_nano_banana):
         """Test generating multiple images in batch."""
-        prompts = [
-            "Computer sprite",
-            "Keyboard sprite",
-            "Mouse sprite",
-            "Monitor sprite"
-        ]
+        prompts = ["Computer sprite", "Keyboard sprite", "Mouse sprite", "Monitor sprite"]
 
         images = []
         for prompt in prompts:
@@ -297,9 +280,7 @@ class TestNanoBananaIntegrationWorkflow:
             assert isinstance(image, Image.Image)
             assert image.size == (32, 32)
 
-    def test_generation_with_retry_on_validation_failure(
-        self, mock_nano_banana, test_config
-    ):
+    def test_generation_with_retry_on_validation_failure(self, mock_nano_banana, test_config):
         """Test generation with retry if validation fails."""
         dim_config = test_config["validation"]["image_dimensions"]
         max_attempts = test_config["prompt_generation"]["max_attempts"]
@@ -310,16 +291,14 @@ class TestNanoBananaIntegrationWorkflow:
 
         for attempt in range(max_attempts):
             attempts += 1
-            image = mock_nano_banana.generate_image(
-                "Computer sprite",
-                width=32,
-                height=32
-            )
+            image = mock_nano_banana.generate_image("Computer sprite", width=32, height=32)
 
             # Validate dimensions
             width, height = image.size
-            if (dim_config["min"] <= width <= dim_config["max"] and
-                dim_config["min"] <= height <= dim_config["max"]):
+            if (
+                dim_config["min"] <= width <= dim_config["max"]
+                and dim_config["min"] <= height <= dim_config["max"]
+            ):
                 valid_image = image
                 break
 
@@ -340,9 +319,7 @@ class TestNanoBananaIntegrationWorkflow:
         elapsed_time = time.time() - start_time
 
         # Mock generation should be very fast
-        assert elapsed_time < 5.0, \
-            f"Mock generation should be fast (took {elapsed_time:.2f}s)"
+        assert elapsed_time < 5.0, f"Mock generation should be fast (took {elapsed_time:.2f}s)"
 
         avg_time_per_generation = elapsed_time / num_generations
-        assert avg_time_per_generation < 0.1, \
-            "Each generation should take < 0.1s"
+        assert avg_time_per_generation < 0.1, "Each generation should take < 0.1s"

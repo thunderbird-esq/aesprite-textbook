@@ -13,21 +13,15 @@ This module provides:
 - Test data generators
 """
 
-import os
-import sys
-import io
-import json
-import tempfile
 import hashlib
-from typing import Dict, List, Any, Optional, Tuple
+import sys
+import tempfile
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch
-from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
-import pytest
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-
+import pytest
+from PIL import Image, ImageDraw
 
 # ============================================================================
 # Configuration Constants
@@ -42,6 +36,7 @@ TEST_ASSETS_DIR = Path(__file__).parent / "tests" / "fixtures"
 # Mock API Clients
 # ============================================================================
 
+
 class MockGeminiClient:
     """Mock Gemini API client for testing without actual API calls."""
 
@@ -55,9 +50,7 @@ class MockGeminiClient:
                 {
                     "content": {
                         "parts": [
-                            {
-                                "text": "This is a mock sprite of a computer with keyboard and mouse."
-                            }
+                            {"text": "This is a mock sprite of a computer with keyboard and mouse."}
                         ]
                     }
                 }
@@ -94,7 +87,9 @@ class MockNanoBananaClient:
         self.last_params = {}
         self.mock_image = None
 
-    def generate_image(self, prompt: str, width: int = 32, height: int = 32, **kwargs) -> Image.Image:
+    def generate_image(
+        self, prompt: str, width: int = 32, height: int = 32, **kwargs
+    ) -> Image.Image:
         """Mock image generation - returns a simple test sprite."""
         self.call_count += 1
         self.last_prompt = prompt
@@ -129,10 +124,11 @@ class MockNanoBananaClient:
 # Test Asset Creators
 # ============================================================================
 
+
 def create_test_sprite(
     size: Tuple[int, int] = TEST_IMAGE_SIZE,
     color: Tuple[int, int, int] = (200, 100, 50),
-    pattern: str = "solid"
+    pattern: str = "solid",
 ) -> Image.Image:
     """
     Create a test sprite image.
@@ -166,8 +162,10 @@ def create_test_sprite(
 
     elif pattern == "computer":
         # Draw a simple computer sprite
-        draw.rectangle([5, 8, size[0]-5, size[1]//2], fill=(100, 100, 100))  # Screen
-        draw.rectangle([size[0]//4, size[1]//2+2, 3*size[0]//4, size[1]-4], fill=(150, 150, 150))  # Keyboard
+        draw.rectangle([5, 8, size[0] - 5, size[1] // 2], fill=(100, 100, 100))  # Screen
+        draw.rectangle(
+            [size[0] // 4, size[1] // 2 + 2, 3 * size[0] // 4, size[1] - 4], fill=(150, 150, 150)
+        )  # Keyboard
 
     return img
 
@@ -175,7 +173,7 @@ def create_test_sprite(
 def create_test_config(
     forbidden_terms: Optional[List[str]] = None,
     allowed_terms: Optional[List[str]] = None,
-    required_visual_terms: Optional[List[str]] = None
+    required_visual_terms: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Create a test configuration dictionary.
@@ -190,53 +188,28 @@ def create_test_config(
     """
     return {
         "validation": {
-            "forbidden_terms": forbidden_terms or [
-                "gradient", "shader", "alpha", "transparency", "blend"
-            ],
-            "allowed_modern_terms": allowed_terms or [
-                "computer", "keyboard", "mouse", "monitor"
-            ],
-            "required_visual_terms": required_visual_terms or [
-                "keyboard", "mouse", "monitor", "computer"
-            ],
+            "forbidden_terms": forbidden_terms
+            or ["gradient", "shader", "alpha", "transparency", "blend"],
+            "allowed_modern_terms": allowed_terms or ["computer", "keyboard", "mouse", "monitor"],
+            "required_visual_terms": required_visual_terms
+            or ["keyboard", "mouse", "monitor", "computer"],
             "min_hardware_terms": 2,
-            "image_dimensions": {
-                "min": 16,
-                "max": 64,
-                "recommended": 32
-            },
-            "color_distribution": {
-                "max_single_color_ratio": 0.8,
-                "min_unique_colors": 3
-            },
+            "image_dimensions": {"min": 16, "max": 64, "recommended": 32},
+            "color_distribution": {"max_single_color_ratio": 0.8, "min_unique_colors": 3},
             "layout": {
                 "spine_dead_zone_mm": 5,
                 "spine_dead_zone_px": 50,
-                "max_rotation_degrees": 15
-            }
+                "max_rotation_degrees": 15,
+            },
         },
         "compositor": {
             "spread_size": [2000, 1400],
             "background_color": [255, 242, 204],
-            "spiral_binding": {
-                "enabled": True,
-                "holes": 23,
-                "hole_diameter_mm": 6
-            },
-            "page_curvature": {
-                "enabled": True,
-                "shadow_width": 30,
-                "shadow_opacity": 0.3
-            },
-            "cmyk_misregistration": {
-                "enabled": True,
-                "max_shift_px": 2
-            }
+            "spiral_binding": {"enabled": True, "holes": 23, "hole_diameter_mm": 6},
+            "page_curvature": {"enabled": True, "shadow_width": 30, "shadow_opacity": 0.3},
+            "cmyk_misregistration": {"enabled": True, "max_shift_px": 2},
         },
-        "prompt_generation": {
-            "temperature": 0.7,
-            "max_attempts": 3
-        }
+        "prompt_generation": {"temperature": 0.7, "max_attempts": 3},
     }
 
 
@@ -252,28 +225,26 @@ def create_test_layout(num_elements: int = 2) -> Dict[str, Any]:
     """
     elements = []
     for i in range(num_elements):
-        elements.append({
-            "id": f"element_{i}",
-            "type": "sprite",
-            "position": [200 + i * 400, 300 + i * 200],
-            "size": [32, 32],
-            "rotation": 0,
-            "prompt_template": "A pixel art sprite of a {topic} in Aesprite style"
-        })
+        elements.append(
+            {
+                "id": f"element_{i}",
+                "type": "sprite",
+                "position": [200 + i * 400, 300 + i * 200],
+                "size": [32, 32],
+                "rotation": 0,
+                "prompt_template": "A pixel art sprite of a {topic} in Aesprite style",
+            }
+        )
 
     return {
         "spread_id": "test_spread",
         "elements": elements,
-        "metadata": {
-            "page_numbers": [4, 5],
-            "section": "test_section"
-        }
+        "metadata": {"page_numbers": [4, 5], "section": "test_section"},
     }
 
 
 def create_test_prompt_xml(
-    description: str = "computer with keyboard",
-    forbidden_word: Optional[str] = None
+    description: str = "computer with keyboard", forbidden_word: Optional[str] = None
 ) -> str:
     """
     Create a test prompt in XML format.
@@ -303,10 +274,9 @@ def create_test_prompt_xml(
 # Image Comparison Utilities
 # ============================================================================
 
+
 def compare_images(
-    img1: Image.Image,
-    img2: Image.Image,
-    threshold: float = 0.95
+    img1: Image.Image, img2: Image.Image, threshold: float = 0.95
 ) -> Tuple[bool, float]:
     """
     Compare two images for similarity.
@@ -328,7 +298,7 @@ def compare_images(
 
     # Calculate MSE
     mse = np.mean((arr1 - arr2) ** 2)
-    max_mse = 255 ** 2
+    max_mse = 255**2
     similarity = 1.0 - (mse / max_mse)
 
     return similarity >= threshold, similarity
@@ -348,8 +318,7 @@ def compute_image_hash(img: Image.Image) -> str:
 
 
 def check_color_distribution(
-    img: Image.Image,
-    max_single_color_ratio: float = 0.8
+    img: Image.Image, max_single_color_ratio: float = 0.8
 ) -> Tuple[bool, Dict[str, float]]:
     """
     Check if image color distribution is within acceptable limits.
@@ -381,16 +350,14 @@ def check_color_distribution(
     stats = {
         "unique_colors": num_unique,
         "max_color_ratio": max_ratio,
-        "is_valid": max_ratio <= max_single_color_ratio and num_unique >= 3
+        "is_valid": max_ratio <= max_single_color_ratio and num_unique >= 3,
     }
 
     return stats["is_valid"], stats
 
 
 def detect_spine_intrusion(
-    elements: List[Dict[str, Any]],
-    spread_width: int = 2000,
-    dead_zone_px: int = 50
+    elements: List[Dict[str, Any]], spread_width: int = 2000, dead_zone_px: int = 50
 ) -> List[str]:
     """
     Detect if any elements intrude into the spine dead zone.
@@ -416,7 +383,7 @@ def detect_spine_intrusion(
         elem_left = x
         elem_right = x + w
 
-        if (elem_left < spine_max and elem_right > spine_min):
+        if elem_left < spine_max and elem_right > spine_min:
             intruding.append(elem["id"])
 
     return intruding
@@ -425,6 +392,7 @@ def detect_spine_intrusion(
 # ============================================================================
 # Pytest Fixtures (to be used in conftest.py)
 # ============================================================================
+
 
 def get_mock_gemini_client():
     """Fixture for mock Gemini client."""
@@ -460,11 +428,12 @@ def get_temp_dir():
 # Test Runner Integration
 # ============================================================================
 
+
 def run_tests(
     test_path: Optional[str] = None,
     coverage: bool = True,
     verbose: bool = True,
-    markers: Optional[str] = None
+    markers: Optional[str] = None,
 ) -> int:
     """
     Run pytest tests with coverage.

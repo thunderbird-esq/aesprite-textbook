@@ -726,7 +726,7 @@ UI Palette (8 colors):
   - Version 1.3+ required for tilemap layers
   - Purchase on Steam or website
   - Educational discount available
-  
+
 - **XPPen Drivers** - [xp-pen.com/download](https://www.xp-pen.com/download)
   - Select Deco 01 V3 model
   - Download latest version (4.0.10+)

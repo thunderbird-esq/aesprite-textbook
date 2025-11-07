@@ -10,10 +10,11 @@ Tests include:
 - Metadata handling
 """
 
-import pytest
 import numpy as np
+import pytest
 from PIL import Image
-from test_framework import create_test_sprite, compare_images
+
+from test_framework import compare_images, create_test_sprite
 
 
 class TestCMYKConversion:
@@ -96,11 +97,14 @@ class TestMisregistrationEffect:
         arr_r_shifted = np.roll(arr_r, 2, axis=1)
         arr_b_shifted = np.roll(arr_b, -2, axis=1)
 
-        shifted = Image.merge("RGB", (
-            Image.fromarray(arr_r_shifted),
-            Image.fromarray(arr_g),
-            Image.fromarray(arr_b_shifted)
-        ))
+        shifted = Image.merge(
+            "RGB",
+            (
+                Image.fromarray(arr_r_shifted),
+                Image.fromarray(arr_g),
+                Image.fromarray(arr_b_shifted),
+            ),
+        )
 
         # Images should be different
         is_same, similarity = compare_images(test_sprite, shifted, threshold=0.99)
@@ -124,9 +128,7 @@ class TestImageSharpening:
         from PIL import ImageFilter
 
         # Apply unsharp mask
-        unsharp = test_sprite.filter(
-            ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3)
-        )
+        unsharp = test_sprite.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
 
         assert unsharp is not None
         assert unsharp.size == test_sprite.size
@@ -146,7 +148,7 @@ class TestResolutionAdjustment:
 
     def test_get_image_dpi(self, test_sprite):
         """Test getting image DPI."""
-        dpi = test_sprite.info.get('dpi', (72, 72))
+        dpi = test_sprite.info.get("dpi", (72, 72))
 
         assert isinstance(dpi, tuple)
         assert len(dpi) == 2
@@ -160,7 +162,6 @@ class TestResolutionAdjustment:
 
         # Load and verify
         loaded = Image.open(output_path)
-        loaded_dpi = loaded.info.get('dpi')
 
         # DPI might be stored in various ways depending on format
         assert loaded is not None
@@ -218,6 +219,7 @@ class TestFormatConversion:
         test_sprite.save(output_path, "PNG", optimize=True)
 
         import os
+
         assert os.path.exists(output_path)
         assert os.path.getsize(output_path) > 0
 
@@ -307,7 +309,7 @@ class TestPostProcessingPipeline:
 
     def test_full_processing_pipeline(self, test_sprite, temp_dir):
         """Test complete processing from input to output."""
-        from PIL import ImageFilter, ImageEnhance
+        from PIL import ImageEnhance, ImageFilter
 
         # Step 1: Sharpen
         sharpened = test_sprite.filter(ImageFilter.SHARPEN)
@@ -343,7 +345,7 @@ class TestPostProcessingPipeline:
         images = [
             create_test_sprite(pattern="solid"),
             create_test_sprite(pattern="checkerboard"),
-            create_test_sprite(pattern="computer")
+            create_test_sprite(pattern="computer"),
         ]
 
         processed = []
@@ -358,6 +360,7 @@ class TestPostProcessingPipeline:
 
         # Verify all files exist
         import os
+
         for path in processed:
             assert os.path.exists(path)
 
@@ -365,13 +368,14 @@ class TestPostProcessingPipeline:
     def test_processing_performance(self, test_sprite):
         """Test processing performance."""
         import time
+
         from PIL import ImageFilter
 
         num_iterations = 100
         start_time = time.time()
 
         for _ in range(num_iterations):
-            sharpened = test_sprite.filter(ImageFilter.SHARPEN)
+            test_sprite.filter(ImageFilter.SHARPEN)
 
         elapsed = time.time() - start_time
 

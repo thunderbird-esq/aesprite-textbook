@@ -11,7 +11,6 @@ Tests include:
 """
 
 import pytest
-from test_framework import MockGeminiClient
 
 
 @pytest.mark.api
@@ -26,7 +25,7 @@ class TestGeminiClientBasics:
 
     def test_client_has_generate_method(self, mock_gemini):
         """Test that client has generate_content method."""
-        assert hasattr(mock_gemini, 'generate_content')
+        assert hasattr(mock_gemini, "generate_content")
         assert callable(mock_gemini.generate_content)
 
 
@@ -60,11 +59,7 @@ class TestContentGeneration:
 
     def test_multiple_generations(self, mock_gemini):
         """Test multiple content generations."""
-        prompts = [
-            "Prompt 1",
-            "Prompt 2",
-            "Prompt 3"
-        ]
+        prompts = ["Prompt 1", "Prompt 2", "Prompt 3"]
 
         for prompt in prompts:
             mock_gemini.generate_content(prompt)
@@ -98,17 +93,7 @@ class TestResponseParsing:
     def test_custom_response(self, mock_gemini):
         """Test using custom response."""
         custom_text = "Custom computer sprite description"
-        custom_response = {
-            "candidates": [
-                {
-                    "content": {
-                        "parts": [
-                            {"text": custom_text}
-                        ]
-                    }
-                }
-            ]
-        }
+        custom_response = {"candidates": [{"content": {"parts": [{"text": custom_text}]}}]}
 
         mock_gemini.set_response(custom_response)
         response = mock_gemini.generate_content("Test")
@@ -205,10 +190,8 @@ class TestPromptValidation:
         valid_prompt = "A pixel art sprite of a computer"
         invalid_prompt = "A sprite with gradient effects"
 
-        has_forbidden_valid = any(term in valid_prompt.lower()
-                                 for term in forbidden)
-        has_forbidden_invalid = any(term in invalid_prompt.lower()
-                                   for term in forbidden)
+        has_forbidden_valid = any(term in valid_prompt.lower() for term in forbidden)
+        has_forbidden_invalid = any(term in invalid_prompt.lower() for term in forbidden)
 
         assert not has_forbidden_valid, "Valid prompt should pass"
         assert has_forbidden_invalid, "Invalid prompt should fail"
@@ -278,7 +261,7 @@ class TestRetryLogic:
 
         delays = []
         for attempt in range(max_retries):
-            delay = base_delay * (2 ** attempt)
+            delay = base_delay * (2**attempt)
             delays.append(delay)
 
         # Verify exponential growth
@@ -342,19 +325,13 @@ class TestGeminiIntegrationWorkflow:
 
         # Set up responses (first invalid, then valid)
         invalid_response = {
-            "candidates": [{
-                "content": {
-                    "parts": [{"text": "A sprite with gradient and shader"}]
-                }
-            }]
+            "candidates": [{"content": {"parts": [{"text": "A sprite with gradient and shader"}]}}]
         }
 
         valid_response = {
-            "candidates": [{
-                "content": {
-                    "parts": [{"text": "A sprite of a computer with keyboard"}]
-                }
-            }]
+            "candidates": [
+                {"content": {"parts": [{"text": "A sprite of a computer with keyboard"}]}}
+            ]
         }
 
         mock_gemini.set_response(invalid_response)

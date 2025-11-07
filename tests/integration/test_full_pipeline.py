@@ -9,20 +9,17 @@ Tests include:
 - Performance benchmarks
 """
 
-import pytest
-import time
 import os
+import time
+
+import pytest
 from PIL import Image
 
 from test_framework import (
-    create_test_sprite,
+    check_color_distribution,
     create_test_config,
     create_test_layout,
-    create_test_prompt_xml,
-    MockGeminiClient,
-    MockNanoBananaClient,
-    detect_spine_intrusion,
-    check_color_distribution,
+    create_test_sprite,
 )
 
 
@@ -67,11 +64,7 @@ class TestEndToEndSpreadGeneration:
         images = []
         for i, element in enumerate(test_layout["elements"]):
             size = element.get("size", [32, 32])
-            img = mock_nano_banana.generate_image(
-                descriptions[i],
-                width=size[0],
-                height=size[1]
-            )
+            img = mock_nano_banana.generate_image(descriptions[i], width=size[0], height=size[1])
             images.append(img)
 
         assert len(images) == len(test_layout["elements"])
@@ -107,10 +100,7 @@ class TestEndToEndSpreadGeneration:
             num_holes = binding_config["holes"]
             for j in range(num_holes):
                 y = int((j + 1) * spread_size[1] / (num_holes + 1))
-                draw.ellipse(
-                    [spine_x - 5, y - 5, spine_x + 5, y + 5],
-                    fill=(200, 200, 200)
-                )
+                draw.ellipse([spine_x - 5, y - 5, spine_x + 5, y + 5], fill=(200, 200, 200))
 
         # Step 10: Save final spread
         output_path = os.path.join(temp_dir, "final_spread.png")
@@ -135,7 +125,7 @@ class TestBatchAssetGeneration:
             "A pixel art keyboard",
             "A pixel art mouse",
             "A pixel art monitor",
-            "A pixel art desk"
+            "A pixel art desk",
         ]
 
         images = []
@@ -151,27 +141,21 @@ class TestBatchAssetGeneration:
             width, height = img.size
             assert dim_config["min"] <= width <= dim_config["max"]
 
-    def test_batch_generation_with_validation(
-        self, mock_nano_banana, test_config
-    ):
+    def test_batch_generation_with_validation(self, mock_nano_banana, test_config):
         """Test batch generation with validation checks."""
         num_assets = 10
         valid_images = []
         invalid_count = 0
 
         for i in range(num_assets):
-            img = mock_nano_banana.generate_image(
-                f"Asset {i}",
-                width=32,
-                height=32
-            )
+            img = mock_nano_banana.generate_image(f"Asset {i}", width=32, height=32)
 
             # Validate
             dim_config = test_config["validation"]["image_dimensions"]
             width, height = img.size
             dim_valid = (
-                dim_config["min"] <= width <= dim_config["max"] and
-                dim_config["min"] <= height <= dim_config["max"]
+                dim_config["min"] <= width <= dim_config["max"]
+                and dim_config["min"] <= height <= dim_config["max"]
             )
 
             if dim_valid:
@@ -189,11 +173,7 @@ class TestBatchAssetGeneration:
 
         images = []
         for size in sizes:
-            img = mock_nano_banana.generate_image(
-                "Test sprite",
-                width=size[0],
-                height=size[1]
-            )
+            img = mock_nano_banana.generate_image("Test sprite", width=size[0], height=size[1])
             images.append(img)
 
         assert len(images) == len(sizes)
@@ -207,28 +187,18 @@ class TestBatchAssetGeneration:
 class TestValidationAndRegeneration:
     """Test validation and regeneration on failure."""
 
-    def test_regenerate_on_forbidden_terms(
-        self, mock_gemini, test_config
-    ):
+    def test_regenerate_on_forbidden_terms(self, mock_gemini, test_config):
         """Test regenerating prompt if forbidden terms detected."""
         forbidden = test_config["validation"]["forbidden_terms"]
         max_attempts = test_config["prompt_generation"]["max_attempts"]
 
         # Set up responses (first has forbidden term, second is clean)
-        mock_gemini.set_response({
-            "candidates": [{
-                "content": {
-                    "parts": [{"text": "A sprite with gradient effects"}]
-                }
-            }]
-        })
-        mock_gemini.set_response({
-            "candidates": [{
-                "content": {
-                    "parts": [{"text": "A sprite of a computer"}]
-                }
-            }]
-        })
+        mock_gemini.set_response(
+            {"candidates": [{"content": {"parts": [{"text": "A sprite with gradient effects"}]}}]}
+        )
+        mock_gemini.set_response(
+            {"candidates": [{"content": {"parts": [{"text": "A sprite of a computer"}]}}]}
+        )
 
         # Try generation with retry
         attempts = 0
@@ -248,9 +218,7 @@ class TestValidationAndRegeneration:
         assert valid_response is not None
         assert attempts == 2  # Should succeed on second attempt
 
-    def test_regenerate_on_dimension_failure(
-        self, mock_nano_banana, test_config
-    ):
+    def test_regenerate_on_dimension_failure(self, mock_nano_banana, test_config):
         """Test regenerating if image dimensions are invalid."""
         dim_config = test_config["validation"]["image_dimensions"]
         max_attempts = 3
@@ -263,16 +231,14 @@ class TestValidationAndRegeneration:
             attempts += 1
 
             # Generate with correct size (mock always succeeds)
-            img = mock_nano_banana.generate_image(
-                "Test",
-                width=32,
-                height=32
-            )
+            img = mock_nano_banana.generate_image("Test", width=32, height=32)
 
             # Validate
             width, height = img.size
-            if (dim_config["min"] <= width <= dim_config["max"] and
-                dim_config["min"] <= height <= dim_config["max"]):
+            if (
+                dim_config["min"] <= width <= dim_config["max"]
+                and dim_config["min"] <= height <= dim_config["max"]
+            ):
                 valid_image = img
                 break
 
@@ -286,13 +252,13 @@ class TestValidationAndRegeneration:
 
         # Set all responses to have forbidden terms
         for _ in range(max_attempts + 1):
-            mock_gemini.set_response({
-                "candidates": [{
-                    "content": {
-                        "parts": [{"text": "A sprite with gradient shader"}]
-                    }
-                }]
-            })
+            mock_gemini.set_response(
+                {
+                    "candidates": [
+                        {"content": {"parts": [{"text": "A sprite with gradient shader"}]}}
+                    ]
+                }
+            )
 
         # Try generation
         attempts = 0
@@ -352,8 +318,9 @@ class TestConfigDrivenVariation:
         config2 = create_test_config()
         config2["validation"]["forbidden_terms"] = ["gradient", "shader", "alpha", "blend"]
 
-        assert len(config1["validation"]["forbidden_terms"]) < \
-               len(config2["validation"]["forbidden_terms"])
+        assert len(config1["validation"]["forbidden_terms"]) < len(
+            config2["validation"]["forbidden_terms"]
+        )
 
     def test_different_element_counts(self):
         """Test layouts with different numbers of elements."""
@@ -392,11 +359,7 @@ class TestPerformanceBenchmarks:
 
             # Generate image
             size = element.get("size", [32, 32])
-            img = mock_nano_banana.generate_image(
-                desc,
-                width=size[0],
-                height=size[1]
-            )
+            img = mock_nano_banana.generate_image(desc, width=size[0], height=size[1])
 
             # Place on canvas
             position = tuple(element["position"])
@@ -408,8 +371,7 @@ class TestPerformanceBenchmarks:
 
         elapsed = time.time() - start_time
 
-        assert elapsed < max_time, \
-            f"Generation took {elapsed:.2f}s, should be < {max_time}s"
+        assert elapsed < max_time, f"Generation took {elapsed:.2f}s, should be < {max_time}s"
 
         print(f"Spread generation completed in {elapsed:.2f}s")
 
@@ -425,8 +387,7 @@ class TestPerformanceBenchmarks:
 
         elapsed = time.time() - start_time
 
-        assert elapsed < max_time, \
-            f"Batch generation took {elapsed:.2f}s, should be < {max_time}s"
+        assert elapsed < max_time, f"Batch generation took {elapsed:.2f}s, should be < {max_time}s"
 
         avg_time = elapsed / num_assets
         print(f"Average generation time: {avg_time:.4f}s per asset")
@@ -444,7 +405,7 @@ class TestPerformanceBenchmarks:
             # Validate dimensions
             dim_config = test_config["validation"]["image_dimensions"]
             width, height = img.size
-            _ = (dim_config["min"] <= width <= dim_config["max"])
+            _ = dim_config["min"] <= width <= dim_config["max"]
 
             # Validate color distribution
             max_ratio = test_config["validation"]["color_distribution"]["max_single_color_ratio"]
@@ -452,8 +413,7 @@ class TestPerformanceBenchmarks:
 
         elapsed = time.time() - start_time
 
-        assert elapsed < max_time, \
-            f"Validation took {elapsed:.2f}s, should be < {max_time}s"
+        assert elapsed < max_time, f"Validation took {elapsed:.2f}s, should be < {max_time}s"
 
     def test_composition_performance(self, test_config):
         """Test composition performance."""
@@ -475,8 +435,7 @@ class TestPerformanceBenchmarks:
 
         elapsed = time.time() - start_time
 
-        assert elapsed < max_time, \
-            f"Composition took {elapsed:.2f}s, should be < {max_time}s"
+        assert elapsed < max_time, f"Composition took {elapsed:.2f}s, should be < {max_time}s"
 
         avg_time = elapsed / num_compositions
         print(f"Average composition time: {avg_time:.4f}s per spread")
@@ -486,20 +445,14 @@ class TestPerformanceBenchmarks:
 class TestErrorRecovery:
     """Test error recovery and resilience."""
 
-    def test_continue_on_single_asset_failure(
-        self, mock_nano_banana, test_config
-    ):
+    def test_continue_on_single_asset_failure(self, mock_nano_banana, test_config):
         """Test that pipeline continues if single asset fails."""
         num_assets = 5
         generated = []
 
         for i in range(num_assets):
             try:
-                img = mock_nano_banana.generate_image(
-                    f"Asset {i}",
-                    width=32,
-                    height=32
-                )
+                img = mock_nano_banana.generate_image(f"Asset {i}", width=32, height=32)
                 generated.append(img)
             except Exception:
                 # Continue on error
@@ -511,14 +464,11 @@ class TestErrorRecovery:
     def test_fallback_to_default_values(self, test_config):
         """Test falling back to defaults on invalid config."""
         # Simulate missing config values
-        incomplete_config = {
-            "compositor": {}
-        }
+        incomplete_config = {"compositor": {}}
 
         # Use defaults if missing
         spread_size = incomplete_config.get("compositor", {}).get(
-            "spread_size",
-            [2000, 1400]  # Default
+            "spread_size", [2000, 1400]  # Default
         )
 
         assert spread_size == [2000, 1400]
@@ -530,7 +480,7 @@ class TestErrorRecovery:
 
         try:
             binding_enabled = config["compositor"]["spiral_binding"]["enabled"]
-        except:
+        except Exception:
             binding_enabled = False  # Gracefully disable
 
         # Should still work

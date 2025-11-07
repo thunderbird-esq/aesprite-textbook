@@ -13,22 +13,18 @@ Tests include:
 - Full composition integration
 """
 
-import pytest
 import hashlib
-from PIL import Image, ImageDraw
+
 import numpy as np
+import pytest
+from PIL import Image, ImageDraw
 
-from test_framework import (
-    create_test_sprite,
-    create_test_config,
-    create_test_layout,
-    compare_images,
-)
-
+from test_framework import compare_images, create_test_sprite
 
 # ============================================================================
 # Chaos Rotation Tests
 # ============================================================================
+
 
 class TestChaosRotationDeterministic:
     """Test that chaos rotation is deterministic based on element ID."""
@@ -72,8 +68,7 @@ class TestChaosRotationDeterministic:
             hash_val = int(hashlib.md5(element_id.encode()).hexdigest(), 16)
             rotation = (hash_val % 31) - 15
 
-            assert -15 <= rotation <= 15, \
-                f"Rotation {rotation}° should be within ±15°"
+            assert -15 <= rotation <= 15, f"Rotation {rotation}° should be within ±15°"
 
     def test_rotation_distribution(self):
         """Test that rotations are distributed across the range."""
@@ -86,13 +81,13 @@ class TestChaosRotationDeterministic:
 
         # Check that we have variety in rotations
         unique_rotations = set(rotations)
-        assert len(unique_rotations) > 20, \
-            "Should have variety in rotation values"
+        assert len(unique_rotations) > 20, "Should have variety in rotation values"
 
 
 # ============================================================================
 # Base Canvas Tests
 # ============================================================================
+
 
 class TestBaseCanvasCreation:
     """Test creation of base canvas for spreads."""
@@ -102,8 +97,9 @@ class TestBaseCanvasCreation:
         spread_size = test_config["compositor"]["spread_size"]
         canvas = Image.new("RGB", tuple(spread_size))
 
-        assert canvas.size == tuple(spread_size), \
-            f"Canvas should be {spread_size[0]}x{spread_size[1]}"
+        assert canvas.size == tuple(
+            spread_size
+        ), f"Canvas should be {spread_size[0]}x{spread_size[1]}"
 
     def test_canvas_background_color(self, test_config):
         """Test that canvas has correct background color."""
@@ -114,8 +110,7 @@ class TestBaseCanvasCreation:
 
         # Check a few pixels to verify background color
         pixel = canvas.getpixel((100, 100))
-        assert pixel == bg_color, \
-            f"Background should be {bg_color}, got {pixel}"
+        assert pixel == bg_color, f"Background should be {bg_color}, got {pixel}"
 
     def test_canvas_mode_rgb(self, test_config):
         """Test that canvas is in RGB mode."""
@@ -137,6 +132,7 @@ class TestBaseCanvasCreation:
 # ============================================================================
 # Spiral Binding Tests
 # ============================================================================
+
 
 class TestSpiralBindingRendering:
     """Test rendering of spiral binding holes."""
@@ -185,9 +181,8 @@ class TestSpiralBindingRendering:
         for i in range(num_holes):
             y = int((i + 1) * height / (num_holes + 1))
             draw.ellipse(
-                [spine_x - hole_radius, y - hole_radius,
-                 spine_x + hole_radius, y + hole_radius],
-                fill=(200, 200, 200)
+                [spine_x - hole_radius, y - hole_radius, spine_x + hole_radius, y + hole_radius],
+                fill=(200, 200, 200),
             )
 
         # Verify holes were drawn by checking pixel at first hole location
@@ -201,6 +196,7 @@ class TestSpiralBindingRendering:
 # ============================================================================
 # Page Curvature and Shadow Tests
 # ============================================================================
+
 
 class TestPageCurvatureShadow:
     """Test page curvature shadow rendering."""
@@ -243,22 +239,25 @@ class TestPageCurvatureShadow:
             # Gradient from dark to light
             intensity = int(255 * (i / shadow_width))
             color = (intensity, intensity, intensity)
-            draw.line([(spine_x - shadow_width + i, 0),
-                      (spine_x - shadow_width + i, spread_size[1])],
-                     fill=color)
+            draw.line(
+                [(spine_x - shadow_width + i, 0), (spine_x - shadow_width + i, spread_size[1])],
+                fill=color,
+            )
 
         # Verify gradient exists
         left_pixel = canvas.getpixel((spine_x - shadow_width + 5, 100))
         right_pixel = canvas.getpixel((spine_x - 5, 100))
 
         # Left should be darker than right
-        assert sum(left_pixel) < sum(right_pixel), \
-            "Shadow should create gradient from dark to light"
+        assert sum(left_pixel) < sum(
+            right_pixel
+        ), "Shadow should create gradient from dark to light"
 
 
 # ============================================================================
 # Asset Loading and Rotation Tests
 # ============================================================================
+
 
 class TestAssetLoadingAndRotation:
     """Test loading and rotating sprite assets."""
@@ -273,8 +272,7 @@ class TestAssetLoadingAndRotation:
         rotated = test_sprite.rotate(15, expand=True)
 
         assert rotated is not None, "Rotated sprite should exist"
-        assert rotated.size[0] >= test_sprite.size[0], \
-            "Rotated image width should be >= original"
+        assert rotated.size[0] >= test_sprite.size[0], "Rotated image width should be >= original"
 
     def test_rotation_preserves_data(self, test_sprite):
         """Test that rotation doesn't lose significant data."""
@@ -283,8 +281,7 @@ class TestAssetLoadingAndRotation:
         rotated_pixels = set(rotated.getdata())
 
         # Should have some overlap in pixel colors
-        assert len(original_pixels & rotated_pixels) > 0, \
-            "Rotation should preserve some color data"
+        assert len(original_pixels & rotated_pixels) > 0, "Rotation should preserve some color data"
 
     def test_paste_sprite_on_canvas(self, test_config, test_sprite):
         """Test pasting sprite onto canvas."""
@@ -306,6 +303,7 @@ class TestAssetLoadingAndRotation:
 # Text Rendering Tests
 # ============================================================================
 
+
 class TestTextRenderingWordWrap:
     """Test text rendering with word wrapping."""
 
@@ -320,8 +318,7 @@ class TestTextRenderingWordWrap:
         text = "Test text"
         draw.text((100, 100), text, fill=(0, 0, 0))
 
-        # Verify text was drawn (pixel should not be background color)
-        pixel = canvas.getpixel((105, 105))
+        # Verify text was drawn
         # May or may not be exactly black depending on positioning
         assert canvas is not None, "Text rendering should complete"
 
@@ -375,6 +372,7 @@ class TestTextRenderingWordWrap:
 # Spine Intrusion Warning Tests
 # ============================================================================
 
+
 class TestSpineIntrusionWarning:
     """Test logging of spine intrusion warnings."""
 
@@ -386,9 +384,7 @@ class TestSpineIntrusionWarning:
         dead_zone = test_config["validation"]["layout"]["spine_dead_zone_px"]
 
         # Element in dead zone
-        elements = [
-            {"id": "warning_element", "position": [995, 300], "size": [32, 32]}
-        ]
+        elements = [{"id": "warning_element", "position": [995, 300], "size": [32, 32]}]
 
         intruding = detect_spine_intrusion(elements, spread_width, dead_zone)
 
@@ -404,7 +400,7 @@ class TestSpineIntrusionWarning:
         # Elements far from spine
         elements = [
             {"id": "safe_left", "position": [200, 300], "size": [32, 32]},
-            {"id": "safe_right", "position": [1600, 300], "size": [32, 32]}
+            {"id": "safe_right", "position": [1600, 300], "size": [32, 32]},
         ]
 
         intruding = detect_spine_intrusion(elements, spread_width, dead_zone)
@@ -415,6 +411,7 @@ class TestSpineIntrusionWarning:
 # ============================================================================
 # CMYK Misregistration Tests
 # ============================================================================
+
 
 class TestCMYKMisregistration:
     """Test CMYK misregistration effects."""
@@ -451,8 +448,7 @@ class TestCMYKMisregistration:
         shifted_image = Image.merge("RGB", (r_shifted, g_shifted, b_shifted))
 
         assert shifted_image is not None, "Channel shift should work"
-        assert shifted_image.size == test_sprite.size, \
-            "Shifted image should maintain size"
+        assert shifted_image.size == test_sprite.size, "Shifted image should maintain size"
 
     def test_misregistration_creates_chromatic_effect(self, test_sprite):
         """Test that misregistration creates visible chromatic aberration."""
@@ -469,11 +465,14 @@ class TestCMYKMisregistration:
         arr_b_shifted = np.roll(arr_b, -1, axis=1)
 
         # Create shifted image
-        shifted = Image.merge("RGB", (
-            Image.fromarray(arr_r_shifted),
-            Image.fromarray(arr_g),
-            Image.fromarray(arr_b_shifted)
-        ))
+        shifted = Image.merge(
+            "RGB",
+            (
+                Image.fromarray(arr_r_shifted),
+                Image.fromarray(arr_g),
+                Image.fromarray(arr_b_shifted),
+            ),
+        )
 
         # Images should be different
         is_same, similarity = compare_images(test_sprite, shifted, threshold=0.99)
@@ -483,6 +482,7 @@ class TestCMYKMisregistration:
 # ============================================================================
 # Full Composition Integration Tests
 # ============================================================================
+
 
 @pytest.mark.integration
 class TestFullComposition:
@@ -521,8 +521,7 @@ class TestFullComposition:
             num_holes = binding_config["holes"]
             for i in range(num_holes):
                 y = int((i + 1) * spread_size[1] / (num_holes + 1))
-                draw.ellipse([spine_x - 5, y - 5, spine_x + 5, y + 5],
-                           fill=(200, 200, 200))
+                draw.ellipse([spine_x - 5, y - 5, spine_x + 5, y + 5], fill=(200, 200, 200))
 
         # Add page curvature shadow
         curvature_config = test_config["compositor"]["page_curvature"]
@@ -530,9 +529,13 @@ class TestFullComposition:
             shadow_width = curvature_config["shadow_width"]
             for i in range(shadow_width):
                 intensity = int(255 * (i / shadow_width))
-                draw.line([(spread_size[0] // 2 - shadow_width + i, 0),
-                          (spread_size[0] // 2 - shadow_width + i, spread_size[1])],
-                         fill=(intensity, intensity, intensity))
+                draw.line(
+                    [
+                        (spread_size[0] // 2 - shadow_width + i, 0),
+                        (spread_size[0] // 2 - shadow_width + i, spread_size[1]),
+                    ],
+                    fill=(intensity, intensity, intensity),
+                )
 
         assert canvas is not None, "Composition with all effects should work"
 
@@ -548,6 +551,7 @@ class TestFullComposition:
 
         # Verify file was created
         import os
+
         assert os.path.exists(output_path), "Output file should be created"
 
         # Verify file can be loaded

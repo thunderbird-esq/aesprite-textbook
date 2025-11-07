@@ -150,10 +150,10 @@ After installation, access via Window > RetroDiffusion
 
 2. **Enter Prompt:**
    ```
-   Positive: pixel art, knight character, 
+   Positive: pixel art, knight character,
    standing pose, metallic armor, 16-bit style
-   
-   Negative: blurry, realistic, photograph, 
+
+   Negative: blurry, realistic, photograph,
    3d render, smooth, anti-aliased
    ```
 
@@ -215,7 +215,7 @@ Prompt engineering for pixel art differs from general AI art. Specificity about 
 **Example Breakdown:**
 ```
 "16-bit pixel art" [Style]
-"wizard character" [Subject]  
+"wizard character" [Subject]
 "blue robes, pointed hat, staff" [Attributes]
 "sprite sheet, 64x64 pixels" [Technical]
 "game asset, transparent background" [Context]
@@ -251,8 +251,8 @@ Prompt engineering for pixel art differs from general AI art. Specificity about 
 
 *Effective:*
 ```
-"pixel art, female warrior, armor, sword, 
-red hair, determined expression, action pose, 
+"pixel art, female warrior, armor, sword,
+red hair, determined expression, action pose,
 sprite, game character"
 ```
 
@@ -266,8 +266,8 @@ sprite, game character"
 
 *Effective:*
 ```
-"pixel art, forest background, tile set, 
-trees, rocks, grass, 16-bit style, 
+"pixel art, forest background, tile set,
+trees, rocks, grass, 16-bit style,
 repeating pattern, game environment"
 ```
 
@@ -281,8 +281,8 @@ repeating pattern, game environment"
 
 *Effective:*
 ```
-"pixel art, magic potion bottle, 
-glowing liquid, cork stopper, small size, 
+"pixel art, magic potion bottle,
+glowing liquid, cork stopper, small size,
 item icon, transparent background"
 ```
 
@@ -298,8 +298,8 @@ Negative prompts prevent unwanted elements. For pixel art, these are crucial:
 
 **Standard Negative Set:**
 ```
-blurry, smooth, anti-aliased, realistic, 
-photograph, 3d render, gradient, soft, 
+blurry, smooth, anti-aliased, realistic,
+photograph, 3d render, gradient, soft,
 high resolution, detailed background
 ```
 
@@ -307,22 +307,22 @@ high resolution, detailed background
 
 *For Clean Sprites:*
 ```
-busy background, cluttered, noisy, 
-multiple characters, group shot, 
+busy background, cluttered, noisy,
+multiple characters, group shot,
 overlapping elements
 ```
 
 *For Retro Style:*
 ```
-modern, contemporary, high-tech, 
-cyberpunk, futuristic, complex shading, 
+modern, contemporary, high-tech,
+cyberpunk, futuristic, complex shading,
 many colors
 ```
 
 *For Game Assets:*
 ```
-artistic, painterly, sketchy, 
-hand-drawn, watercolor, oil painting, 
+artistic, painterly, sketchy,
+hand-drawn, watercolor, oil painting,
 fine art, museum piece
 ```
 
@@ -400,8 +400,8 @@ Dragon emphasized, size de-emphasized.
 
 Combine influences:
 ```
-"pixel art, character in the style of 
-Final Fantasy 6, with Chrono Trigger colors, 
+"pixel art, character in the style of
+Final Fantasy 6, with Chrono Trigger colors,
 Metal Slug detail level"
 ```
 
@@ -409,8 +409,8 @@ Metal Slug detail level"
 
 Include technical requirements:
 ```
-"pixel art, character, exactly 32x32 pixels, 
-4 colors only, game boy palette, 
+"pixel art, character, exactly 32x32 pixels,
+4 colors only, game boy palette,
 no anti-aliasing, sharp pixels"
 ```
 

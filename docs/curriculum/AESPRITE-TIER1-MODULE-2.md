@@ -339,5 +339,3 @@ Create perfect checkerboard
 Create diagonal lines pattern
 Create dot grid (every 4 pixels)
 Must be perfectly tileable
-
-

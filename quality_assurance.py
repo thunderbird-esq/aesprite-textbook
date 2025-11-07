@@ -5,17 +5,19 @@ Team 4: AI Integration & Processing
 """
 
 import argparse
-import logging
 import json
+import logging
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass, asdict
-import numpy as np
-from PIL import Image, ImageStat
+from typing import Dict, List, Optional
+
 import cv2
+import numpy as np
+from PIL import Image
 
 try:
     import pytesseract
+
     OCR_AVAILABLE = True
 except ImportError:
     OCR_AVAILABLE = False
@@ -23,8 +25,7 @@ except ImportError:
 
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class QAResult:
     """Result of a single QA check"""
+
     check_name: str
     passed: bool
     score: float  # 0.0 to 1.0
@@ -49,19 +51,17 @@ class QualityChecker:
     def __init__(self):
         """Initialize QA checker"""
         self.color_ratios = {
-            'nickelodeon_orange_max': 0.30,
-            'goosebumps_acid_max': 0.10,
-            'primary_colors_min': 0.70
+            "nickelodeon_orange_max": 0.30,
+            "goosebumps_acid_max": 0.10,
+            "primary_colors_min": 0.70,
         }
 
         self.nickelodeon_orange = np.array([245, 125, 13])  # #F57D0D
-        self.goosebumps_acid = np.array([149, 193, 32])     # #95C120
+        self.goosebumps_acid = np.array([149, 193, 32])  # #95C120
 
         logger.info("QualityChecker initialized")
 
-    def check_color_distribution(self,
-                                  image_path: str,
-                                  ratios: Optional[Dict] = None) -> bool:
+    def check_color_distribution(self, image_path: str, ratios: Optional[Dict] = None) -> bool:
         """
         Verify 70/20/10 color rule.
 
@@ -75,7 +75,7 @@ class QualityChecker:
         ratios = ratios or self.color_ratios
 
         try:
-            img = Image.open(image_path).convert('RGB')
+            img = Image.open(image_path).convert("RGB")
             img_array = np.array(img)
             pixels = img_array.reshape(-1, 3)
             total_pixels = len(pixels)
@@ -98,14 +98,16 @@ class QualityChecker:
             nick_ratio = nick_count / total_pixels
             goose_ratio = goose_count / total_pixels
 
-            logger.info(f"Color ratios - Nickelodeon: {nick_ratio:.1%}, Goosebumps: {goose_ratio:.1%}")
+            logger.info(
+                f"Color ratios - Nickelodeon: {nick_ratio:.1%}, Goosebumps: {goose_ratio:.1%}"
+            )
 
             # Check limits
-            if nick_ratio > ratios['nickelodeon_orange_max']:
+            if nick_ratio > ratios["nickelodeon_orange_max"]:
                 logger.warning(f"Too much Nickelodeon orange: {nick_ratio:.1%}")
                 return False
 
-            if goose_ratio > ratios['goosebumps_acid_max']:
+            if goose_ratio > ratios["goosebumps_acid_max"]:
                 logger.warning(f"Too much Goosebumps acid: {goose_ratio:.1%}")
                 return False
 
@@ -116,9 +118,7 @@ class QualityChecker:
             logger.error(f"Color distribution check failed: {e}")
             return False
 
-    def check_text_legibility(self,
-                               image_path: str,
-                               min_contrast: float = 4.5) -> bool:
+    def check_text_legibility(self, image_path: str, min_contrast: float = 4.5) -> bool:
         """
         Check text legibility using OCR and contrast analysis.
 
@@ -130,7 +130,7 @@ class QualityChecker:
             True if text is legible
         """
         try:
-            img = Image.open(image_path).convert('RGB')
+            img = Image.open(image_path).convert("RGB")
             img_array = np.array(img)
 
             # Convert to grayscale for analysis
@@ -188,7 +188,7 @@ class QualityChecker:
         violations = []
 
         try:
-            img = Image.open(image_path).convert('RGB')
+            img = Image.open(image_path).convert("RGB")
             img_array = np.array(img)
 
             # Check for smooth gradients (forbidden in 1996)
@@ -256,11 +256,11 @@ class QualityChecker:
         """Detect modern flat design color palette"""
         # Modern iOS/Material Design colors (too pure/saturated for 1996)
         modern_colors = [
-            [0, 122, 255],     # iOS blue
-            [52, 199, 89],     # iOS green
-            [255, 59, 48],     # iOS red
-            [33, 150, 243],    # Material blue
-            [76, 175, 80],     # Material green
+            [0, 122, 255],  # iOS blue
+            [52, 199, 89],  # iOS green
+            [255, 59, 48],  # iOS red
+            [33, 150, 243],  # Material blue
+            [76, 175, 80],  # Material green
         ]
 
         pixels = img_array.reshape(-1, 3)
@@ -285,79 +285,70 @@ class QualityChecker:
         """
         logger.info(f"Generating QA report for {spread_path}")
 
-        report = {
-            'spread_path': spread_path,
-            'checks': [],
-            'overall_passed': True,
-            'score': 0.0
-        }
+        report = {"spread_path": spread_path, "checks": [], "overall_passed": True, "score": 0.0}
 
         # Color distribution check
         color_passed = self.check_color_distribution(spread_path)
-        report['checks'].append(QAResult(
-            check_name='color_distribution',
-            passed=color_passed,
-            score=1.0 if color_passed else 0.5,
-            message='Color distribution within limits' if color_passed else 'Color ratio violations'
-        ))
+        report["checks"].append(
+            QAResult(
+                check_name="color_distribution",
+                passed=color_passed,
+                score=1.0 if color_passed else 0.5,
+                message="Color distribution within limits"
+                if color_passed
+                else "Color ratio violations",
+            )
+        )
 
         # Text legibility check
         legibility_passed = self.check_text_legibility(spread_path)
-        report['checks'].append(QAResult(
-            check_name='text_legibility',
-            passed=legibility_passed,
-            score=1.0 if legibility_passed else 0.6,
-            message='Text is legible' if legibility_passed else 'Low contrast detected'
-        ))
+        report["checks"].append(
+            QAResult(
+                check_name="text_legibility",
+                passed=legibility_passed,
+                score=1.0 if legibility_passed else 0.6,
+                message="Text is legible" if legibility_passed else "Low contrast detected",
+            )
+        )
 
         # Period authenticity check
         violations = self.check_period_authenticity(spread_path)
         auth_passed = len(violations) == 0
-        report['checks'].append(QAResult(
-            check_name='period_authenticity',
-            passed=auth_passed,
-            score=1.0 if auth_passed else 0.4,
-            message='No anachronisms detected' if auth_passed else f"Violations: {', '.join(violations)}",
-            details={'violations': violations}
-        ))
+        report["checks"].append(
+            QAResult(
+                check_name="period_authenticity",
+                passed=auth_passed,
+                score=1.0 if auth_passed else 0.4,
+                message="No anachronisms detected"
+                if auth_passed
+                else f"Violations: {', '.join(violations)}",
+                details={"violations": violations},
+            )
+        )
 
         # Calculate overall score
-        scores = [check.score for check in report['checks']]
-        report['score'] = np.mean(scores)
-        report['overall_passed'] = all(check.passed for check in report['checks'])
+        scores = [check.score for check in report["checks"]]
+        report["score"] = np.mean(scores)
+        report["overall_passed"] = all(check.passed for check in report["checks"])
 
         # Convert dataclasses to dicts for JSON serialization
-        report['checks'] = [asdict(check) for check in report['checks']]
+        report["checks"] = [asdict(check) for check in report["checks"]]
 
-        logger.info(f"QA report complete - Score: {report['score']:.2f}, Passed: {report['overall_passed']}")
+        logger.info(
+            f"QA report complete - Score: {report['score']:.2f}, Passed: {report['overall_passed']}"
+        )
 
         return report
 
 
 def main():
     """CLI interface for quality assurance"""
-    parser = argparse.ArgumentParser(
-        description='Quality assurance for generated spreads'
-    )
+    parser = argparse.ArgumentParser(description="Quality assurance for generated spreads")
+    parser.add_argument("--spread", required=True, help="Path to spread image file")
+    parser.add_argument("--report", action="store_true", help="Generate detailed report")
+    parser.add_argument("--output", help="Output path for JSON report")
     parser.add_argument(
-        '--spread',
-        required=True,
-        help='Path to spread image file'
-    )
-    parser.add_argument(
-        '--report',
-        action='store_true',
-        help='Generate detailed report'
-    )
-    parser.add_argument(
-        '--output',
-        help='Output path for JSON report'
-    )
-    parser.add_argument(
-        '--min-contrast',
-        type=float,
-        default=4.5,
-        help='Minimum contrast ratio for text'
+        "--min-contrast", type=float, default=4.5, help="Minimum contrast ratio for text"
     )
 
     args = parser.parse_args()
@@ -377,17 +368,17 @@ def main():
             print(f"Status: {'PASSED' if report['overall_passed'] else 'FAILED'}")
             print("\nIndividual Checks:")
 
-            for check in report['checks']:
-                status = "✓" if check['passed'] else "✗"
+            for check in report["checks"]:
+                status = "✓" if check["passed"] else "✗"
                 print(f"  {status} {check['check_name']}: {check['message']}")
 
             # Save to file if requested
             if args.output:
-                with open(args.output, 'w') as f:
+                with open(args.output, "w") as f:
                     json.dump(report, f, indent=2)
                 print(f"\nDetailed report saved to: {args.output}")
 
-            return 0 if report['overall_passed'] else 1
+            return 0 if report["overall_passed"] else 1
 
         except Exception as e:
             logger.error(f"Report generation failed: {e}")
@@ -427,5 +418,5 @@ def main():
             return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

@@ -6,23 +6,24 @@ Team 4: AI Integration & Processing
 
 import argparse
 import logging
-import yaml
 from pathlib import Path
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional, Tuple
+
 import numpy as np
-from PIL import Image, ImageFilter, ImageEnhance, ImageChops, ImageDraw
+import yaml
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance
 from scipy import ndimage
 
 try:
     from tqdm import tqdm
+
     TQDM_AVAILABLE = True
 except ImportError:
     TQDM_AVAILABLE = False
 
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class PostProcessor:
             config_path: Path to configuration YAML (optional)
         """
         if config_path and Path(config_path).exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 self.config = yaml.safe_load(f)
             logger.info(f"Loaded config from {config_path}")
         else:
@@ -53,31 +54,15 @@ class PostProcessor:
     def _get_default_config(self) -> Dict:
         """Get default processing configuration"""
         return {
-            'paper_texture': {
-                'enabled': True,
-                'opacity': 0.08,
-                'grain_size': 1.5
-            },
-            'cmyk_shift': {
-                'enabled': True,
-                'magenta': [1, 0],
-                'yellow': [0, -1]
-            },
-            'dot_gain': {
-                'enabled': True,
-                'gamma': 0.95
-            },
-            'vignette': {
-                'enabled': True,
-                'opacity': 0.15,
-                'feather': 1.5
-            }
+            "paper_texture": {"enabled": True, "opacity": 0.08, "grain_size": 1.5},
+            "cmyk_shift": {"enabled": True, "magenta": [1, 0], "yellow": [0, -1]},
+            "dot_gain": {"enabled": True, "gamma": 0.95},
+            "vignette": {"enabled": True, "opacity": 0.15, "feather": 1.5},
         }
 
-    def apply_paper_texture(self,
-                            image: Image.Image,
-                            texture_path: Optional[str] = None,
-                            opacity: float = 0.08) -> Image.Image:
+    def apply_paper_texture(
+        self, image: Image.Image, texture_path: Optional[str] = None, opacity: float = 0.08
+    ) -> Image.Image:
         """
         Apply paper texture overlay.
 
@@ -92,12 +77,12 @@ class PostProcessor:
         logger.debug("Applying paper texture")
 
         # Convert to RGB if needed
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         # Load or generate texture
         if texture_path and Path(texture_path).exists():
-            texture = Image.open(texture_path).convert('RGB')
+            texture = Image.open(texture_path).convert("RGB")
             texture = texture.resize(image.size, Image.Resampling.LANCZOS)
         else:
             texture = self._generate_paper_texture(image.size)
@@ -119,7 +104,7 @@ class PostProcessor:
             Paper texture image
         """
         # Generate noise
-        grain_size = self.config['paper_texture'].get('grain_size', 1.5)
+        grain_size = self.config["paper_texture"].get("grain_size", 1.5)
 
         noise = np.random.normal(128, 20, (size[1], size[0], 3))
 
@@ -133,12 +118,14 @@ class PostProcessor:
         paper_color = np.array([248, 243, 229])
         texture_array = (texture_array * 0.1 + paper_color * 0.9).astype(np.uint8)
 
-        return Image.fromarray(texture_array, 'RGB')
+        return Image.fromarray(texture_array, "RGB")
 
-    def apply_cmyk_shift(self,
-                         image: Image.Image,
-                         magenta_shift: Tuple[int, int] = (1, 0),
-                         yellow_shift: Tuple[int, int] = (0, -1)) -> Image.Image:
+    def apply_cmyk_shift(
+        self,
+        image: Image.Image,
+        magenta_shift: Tuple[int, int] = (1, 0),
+        yellow_shift: Tuple[int, int] = (0, -1),
+    ) -> Image.Image:
         """
         Apply CMYK color misregistration.
 
@@ -152,8 +139,8 @@ class PostProcessor:
         """
         logger.debug(f"Applying CMYK shift: M{magenta_shift} Y{yellow_shift}")
 
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         # Split into RGB channels
         r, g, b = image.split()
@@ -167,14 +154,12 @@ class PostProcessor:
             b = ImageChops.offset(b, yellow_shift[0], yellow_shift[1])
 
         # Merge back
-        result = Image.merge('RGB', (r, g, b))
+        result = Image.merge("RGB", (r, g, b))
 
         logger.debug("CMYK shift applied")
         return result
 
-    def apply_dot_gain(self,
-                       image: Image.Image,
-                       gamma: float = 0.95) -> Image.Image:
+    def apply_dot_gain(self, image: Image.Image, gamma: float = 0.95) -> Image.Image:
         """
         Apply dot gain (ink spreading on paper).
 
@@ -194,9 +179,7 @@ class PostProcessor:
         logger.debug("Dot gain applied")
         return result
 
-    def apply_vignette(self,
-                       image: Image.Image,
-                       opacity: float = 0.15) -> Image.Image:
+    def apply_vignette(self, image: Image.Image, opacity: float = 0.15) -> Image.Image:
         """
         Apply vignette effect (edge darkening).
 
@@ -209,15 +192,15 @@ class PostProcessor:
         """
         logger.debug(f"Applying vignette (opacity={opacity})")
 
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         # Create radial gradient mask
         width, height = image.size
         center_x, center_y = width // 2, height // 2
 
         # Create vignette mask
-        vignette_mask = Image.new('L', image.size, 0)
+        vignette_mask = Image.new("L", image.size, 0)
         draw = ImageDraw.Draw(vignette_mask)
 
         # Create radial gradient
@@ -232,9 +215,8 @@ class PostProcessor:
 
             # Draw ellipse
             draw.ellipse(
-                [center_x - radius, center_y - radius,
-                 center_x + radius, center_y + radius],
-                fill=alpha
+                [center_x - radius, center_y - radius, center_x + radius, center_y + radius],
+                fill=alpha,
             )
 
         # Apply vignette
@@ -247,9 +229,7 @@ class PostProcessor:
         logger.debug("Vignette applied")
         return result
 
-    def apply_all_artifacts(self,
-                            image: Image.Image,
-                            config: Optional[Dict] = None) -> Image.Image:
+    def apply_all_artifacts(self, image: Image.Image, config: Optional[Dict] = None) -> Image.Image:
         """
         Apply all post-processing effects in one pass.
 
@@ -265,30 +245,27 @@ class PostProcessor:
         result = image.copy()
 
         # Apply effects in order
-        if cfg.get('paper_texture', {}).get('enabled', True):
-            opacity = cfg['paper_texture'].get('opacity', 0.08)
+        if cfg.get("paper_texture", {}).get("enabled", True):
+            opacity = cfg["paper_texture"].get("opacity", 0.08)
             result = self.apply_paper_texture(result, opacity=opacity)
 
-        if cfg.get('cmyk_shift', {}).get('enabled', True):
-            magenta = tuple(cfg['cmyk_shift'].get('magenta', [1, 0]))
-            yellow = tuple(cfg['cmyk_shift'].get('yellow', [0, -1]))
+        if cfg.get("cmyk_shift", {}).get("enabled", True):
+            magenta = tuple(cfg["cmyk_shift"].get("magenta", [1, 0]))
+            yellow = tuple(cfg["cmyk_shift"].get("yellow", [0, -1]))
             result = self.apply_cmyk_shift(result, magenta, yellow)
 
-        if cfg.get('dot_gain', {}).get('enabled', True):
-            gamma = cfg['dot_gain'].get('gamma', 0.95)
+        if cfg.get("dot_gain", {}).get("enabled", True):
+            gamma = cfg["dot_gain"].get("gamma", 0.95)
             result = self.apply_dot_gain(result, gamma)
 
-        if cfg.get('vignette', {}).get('enabled', True):
-            opacity = cfg['vignette'].get('opacity', 0.15)
+        if cfg.get("vignette", {}).get("enabled", True):
+            opacity = cfg["vignette"].get("opacity", 0.15)
             result = self.apply_vignette(result, opacity)
 
         logger.info("All artifacts applied")
         return result
 
-    def batch_process(self,
-                      input_dir: str,
-                      output_dir: str,
-                      config: Optional[Dict] = None) -> int:
+    def batch_process(self, input_dir: str, output_dir: str, config: Optional[Dict] = None) -> int:
         """
         Process multiple images.
 
@@ -306,7 +283,7 @@ class PostProcessor:
 
         # Find all images
         image_files = []
-        for ext in ['*.png', '*.jpg', '*.jpeg']:
+        for ext in ["*.png", "*.jpg", "*.jpeg"]:
             image_files.extend(input_path.glob(ext))
 
         if not image_files:
@@ -347,49 +324,16 @@ class PostProcessor:
 
 def main():
     """CLI interface for post-processor"""
-    parser = argparse.ArgumentParser(
-        description='Apply 1996 print artifacts to images'
-    )
-    parser.add_argument(
-        '--input',
-        help='Input image file (for single image processing)'
-    )
-    parser.add_argument(
-        '--input-dir',
-        help='Input directory (for batch processing)'
-    )
-    parser.add_argument(
-        '--output',
-        help='Output image file (for single image)'
-    )
-    parser.add_argument(
-        '--output-dir',
-        help='Output directory (for batch processing)'
-    )
-    parser.add_argument(
-        '--config',
-        help='Configuration YAML file'
-    )
-    parser.add_argument(
-        '--no-texture',
-        action='store_true',
-        help='Disable paper texture'
-    )
-    parser.add_argument(
-        '--no-cmyk',
-        action='store_true',
-        help='Disable CMYK shift'
-    )
-    parser.add_argument(
-        '--no-dot-gain',
-        action='store_true',
-        help='Disable dot gain'
-    )
-    parser.add_argument(
-        '--no-vignette',
-        action='store_true',
-        help='Disable vignette'
-    )
+    parser = argparse.ArgumentParser(description="Apply 1996 print artifacts to images")
+    parser.add_argument("--input", help="Input image file (for single image processing)")
+    parser.add_argument("--input-dir", help="Input directory (for batch processing)")
+    parser.add_argument("--output", help="Output image file (for single image)")
+    parser.add_argument("--output-dir", help="Output directory (for batch processing)")
+    parser.add_argument("--config", help="Configuration YAML file")
+    parser.add_argument("--no-texture", action="store_true", help="Disable paper texture")
+    parser.add_argument("--no-cmyk", action="store_true", help="Disable CMYK shift")
+    parser.add_argument("--no-dot-gain", action="store_true", help="Disable dot gain")
+    parser.add_argument("--no-vignette", action="store_true", help="Disable vignette")
 
     args = parser.parse_args()
 
@@ -398,13 +342,13 @@ def main():
 
     # Override config based on flags
     if args.no_texture:
-        processor.config['paper_texture']['enabled'] = False
+        processor.config["paper_texture"]["enabled"] = False
     if args.no_cmyk:
-        processor.config['cmyk_shift']['enabled'] = False
+        processor.config["cmyk_shift"]["enabled"] = False
     if args.no_dot_gain:
-        processor.config['dot_gain']['enabled'] = False
+        processor.config["dot_gain"]["enabled"] = False
     if args.no_vignette:
-        processor.config['vignette']['enabled'] = False
+        processor.config["vignette"]["enabled"] = False
 
     # Single or batch mode
     if args.input and args.output:
@@ -436,7 +380,7 @@ def main():
                 print(f"✓ Processed {count} images to {args.output_dir}")
                 return 0
             else:
-                print(f"✗ No images processed")
+                print("✗ No images processed")
                 return 1
 
         except Exception as e:
@@ -452,5 +396,5 @@ def main():
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

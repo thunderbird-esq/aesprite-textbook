@@ -9,33 +9,32 @@ This module provides shared fixtures for all tests including:
 - Sample data
 """
 
-import os
 import sys
-import tempfile
-import shutil
 from pathlib import Path
-from typing import Dict, Any
-
-import pytest
-import yaml
-from PIL import Image
 
 # Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))  # noqa: E402
 
-from test_framework import (
+import os  # noqa: E402
+import shutil  # noqa: E402
+import tempfile  # noqa: E402
+
+import pytest  # noqa: E402
+import yaml  # noqa: E402
+
+from test_framework import (  # noqa: E402
     MockGeminiClient,
     MockNanoBananaClient,
-    create_test_sprite,
     create_test_config,
     create_test_layout,
     create_test_prompt_xml,
+    create_test_sprite,
 )
-
 
 # ============================================================================
 # Session-level fixtures
 # ============================================================================
+
 
 @pytest.fixture(scope="session")
 def test_assets_dir():
@@ -52,6 +51,7 @@ def project_root():
 # ============================================================================
 # Function-level fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def temp_dir():
@@ -157,7 +157,10 @@ def mock_api_responses():
                     "content": {
                         "parts": [
                             {
-                                "text": "A pixel art sprite showing a computer with keyboard and mouse on desk"
+                                "text": (
+                                    "A pixel art sprite showing a computer with "
+                                    "keyboard and mouse on desk"
+                                )
                             }
                         ]
                     }
@@ -168,11 +171,7 @@ def mock_api_responses():
             "candidates": [
                 {
                     "content": {
-                        "parts": [
-                            {
-                                "text": "A sprite with gradient effects and alpha transparency"
-                            }
-                        ]
+                        "parts": [{"text": "A sprite with gradient effects and alpha transparency"}]
                     }
                 }
             ]
@@ -184,17 +183,17 @@ def mock_api_responses():
 # Parametrized fixtures for multiple test cases
 # ============================================================================
 
-@pytest.fixture(params=[
-    {"size": (16, 16), "pattern": "solid"},
-    {"size": (32, 32), "pattern": "computer"},
-    {"size": (64, 64), "pattern": "checkerboard"},
-])
+
+@pytest.fixture(
+    params=[
+        {"size": (16, 16), "pattern": "solid"},
+        {"size": (32, 32), "pattern": "computer"},
+        {"size": (64, 64), "pattern": "checkerboard"},
+    ]
+)
 def parametrized_sprite(request):
     """Provide sprites with different sizes and patterns."""
-    return create_test_sprite(
-        size=request.param["size"],
-        pattern=request.param["pattern"]
-    )
+    return create_test_sprite(size=request.param["size"], pattern=request.param["pattern"])
 
 
 @pytest.fixture(params=[0, 5, 10, 15])
@@ -213,23 +212,16 @@ def element_counts(request):
 # Pytest configuration hooks
 # ============================================================================
 
+
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "unit: marks tests as unit tests"
-    )
-    config.addinivalue_line(
-        "markers", "api: marks tests that mock API calls"
-    )
-    config.addinivalue_line(
-        "markers", "performance: marks performance benchmark tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "unit: marks tests as unit tests")
+    config.addinivalue_line("markers", "api: marks tests that mock API calls")
+    config.addinivalue_line("markers", "performance: marks performance benchmark tests")
 
 
 def pytest_collection_modifyitems(config, items):

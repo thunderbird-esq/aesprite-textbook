@@ -33,18 +33,18 @@ import numpy as np
 @dataclass
 class DocumentationConfig:
     """Configuration for documentation generation with EXACT specifications"""
-    
+
     # Output directories - NO AMBIGUITY
     output_base: Path = Path("docs/generated")
     markdown_dir: Path = Path("docs/generated/markdown")
     json_dir: Path = Path("docs/generated/json")
     xml_dir: Path = Path("docs/generated/xml")
     pdf_assets_dir: Path = Path("docs/generated/pdf_assets")
-    
+
     # Source analysis paths
     modules_to_document: List[str] = field(default_factory=lambda: [
         "klutz_compositor",
-        "asset_validator", 
+        "asset_validator",
         "prompt_generator",
         "post_processor",
         "gemini_integration",
@@ -53,7 +53,7 @@ class DocumentationConfig:
         "performance_optimization",
         "production_monitoring"
     ])
-    
+
     # Layout specifications for PDF generation
     pdf_layout_specs: Dict = field(default_factory=lambda: {
         "canvas_dimensions": [3400, 2200],
@@ -74,7 +74,7 @@ class DocumentationConfig:
             "klutz_yellow": "#FFFF00"
         }
     })
-    
+
     # Sphinx configuration
     sphinx_config: Dict = field(default_factory=lambda: {
         "project": "Klutz Workbook Technical Documentation",
@@ -101,7 +101,7 @@ class DocumentationConfig:
 class CodeAnalyzer:
     """
     Analyzes Python code to extract COMPLETE documentation with zero ambiguity.
-    
+
     This analyzer goes beyond simple docstring extraction - it provides:
     - Full AST analysis of function signatures
     - Dependency graphs between modules
@@ -109,18 +109,18 @@ class CodeAnalyzer:
     - Validation of all numeric constants
     - Extraction of all error conditions
     """
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.modules_cache = {}
         self.dependency_graph = {}
         self.coordinate_specs = {}
         self.error_conditions = {}
-        
+
     def analyze_module(self, module_path: str) -> Dict:
         """
         Performs exhaustive analysis of a Python module.
-        
+
         Returns a dictionary containing:
         - Complete AST structure
         - All functions with full signatures
@@ -129,14 +129,14 @@ class CodeAnalyzer:
         - All coordinate specifications (x, y, width, height)
         - Complete error handling paths
         """
-        
+
         self.logger.info(f"Analyzing module: {module_path}")
-        
+
         with open(module_path, 'r') as f:
             source = f.read()
-        
+
         tree = ast.parse(source)
-        
+
         analysis = {
             "module_name": Path(module_path).stem,
             "file_path": module_path,
@@ -149,30 +149,30 @@ class CodeAnalyzer:
             "error_handlers": self._extract_error_handlers(tree),
             "validation_rules": self._extract_validation_rules(tree)
         }
-        
+
         # Cache for dependency analysis
         self.modules_cache[analysis["module_name"]] = analysis
-        
+
         return analysis
-    
+
     def _extract_coordinates(self, tree: ast.AST) -> Dict:
         """
         Extracts ALL coordinate specifications from code.
-        
+
         This includes:
         - Canvas dimensions (3400x2200)
         - Safe zones (with EXACT pixel boundaries)
         - Spine specifications (462px dead zone at x=1469-1931)
         - Every hardcoded position in the entire codebase
         """
-        
+
         coords = {
             "canvas_specs": {},
             "positioning": [],
             "dimensions": [],
             "critical_zones": {}
         }
-        
+
         class CoordVisitor(ast.NodeVisitor):
             def visit_Assign(self, node):
                 # Look for coordinate assignments
@@ -180,7 +180,7 @@ class CodeAnalyzer:
                     for target in node.targets:
                         if isinstance(target, ast.Name):
                             name = target.id
-                            if any(keyword in name.lower() for keyword in 
+                            if any(keyword in name.lower() for keyword in
                                    ['width', 'height', 'x', 'y', 'position', 'dimension', 'canvas', 'spine']):
                                 if all(isinstance(elt, ast.Constant) for elt in node.value.elts):
                                     values = [elt.value for elt in node.value.elts]
@@ -190,9 +190,9 @@ class CodeAnalyzer:
                                         "line": node.lineno
                                     })
                 self.generic_visit(node)
-        
+
         CoordVisitor().visit(tree)
-        
+
         # Extract critical specifications
         coords["critical_zones"]["spine_dead_zone"] = {
             "start_x": 1469,
@@ -200,27 +200,27 @@ class CodeAnalyzer:
             "width": 462,
             "description": "NO content may intrude into this area"
         }
-        
+
         coords["critical_zones"]["safe_zones"] = {
             "left_page": {"x": 150, "y": 150, "width": 1319, "height": 1900},
             "right_page": {"x": 1931, "y": 150, "width": 1319, "height": 1900}
         }
-        
+
         return coords
-    
+
     def _extract_validation_rules(self, tree: ast.AST) -> List[Dict]:
         """
         Extracts ALL validation rules from the code.
-        
+
         This ensures documentation includes:
         - Every forbidden term that could break authenticity
         - All required specifications for period accuracy
         - Color distribution rules (70/20/10)
         - Dimension tolerances (±10 pixels maximum)
         """
-        
+
         rules = []
-        
+
         class ValidationVisitor(ast.NodeVisitor):
             def visit_FunctionDef(self, node):
                 if 'validate' in node.name.lower():
@@ -232,11 +232,11 @@ class CodeAnalyzer:
                         "returns_violations": 'violation' in ast.get_docstring(node).lower() if ast.get_docstring(node) else False
                     })
                 self.generic_visit(node)
-        
+
         ValidationVisitor().visit(tree)
-        
+
         return rules
-    
+
     def _extract_imports(self, tree: ast.AST) -> List[str]:
         """Extract all imports to build dependency graph"""
         imports = []
@@ -249,11 +249,11 @@ class CodeAnalyzer:
                 for name in node.names:
                     imports.append(f"{module}.{name.name}")
         return imports
-    
+
     def _extract_constants(self, tree: ast.AST) -> Dict:
         """Extract all constants with their EXACT values"""
         constants = {}
-        
+
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for target in node.targets:
@@ -270,13 +270,13 @@ class CodeAnalyzer:
                                 "value": ast.unparse(node.value) if hasattr(ast, 'unparse') else str(node.value),
                                 "line": node.lineno
                             }
-        
+
         return constants
-    
+
     def _extract_functions(self, tree: ast.AST, source: str) -> List[Dict]:
         """Extract complete function documentation"""
         functions = []
-        
+
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 func_data = {
@@ -290,13 +290,13 @@ class CodeAnalyzer:
                     "returns": self._extract_return_type(node)
                 }
                 functions.append(func_data)
-        
+
         return functions
-    
+
     def _extract_classes(self, tree: ast.AST, source: str) -> List[Dict]:
         """Extract complete class documentation including ALL methods"""
         classes = []
-        
+
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef):
                 class_data = {
@@ -307,7 +307,7 @@ class CodeAnalyzer:
                     "attributes": [],
                     "line_start": node.lineno
                 }
-                
+
                 # Extract all methods
                 for item in node.body:
                     if isinstance(item, ast.FunctionDef):
@@ -315,15 +315,15 @@ class CodeAnalyzer:
                             "name": item.name,
                             "docstring": ast.get_docstring(item),
                             "signature": self._get_function_signature(item),
-                            "is_property": any(isinstance(d, ast.Name) and d.id == 'property' 
+                            "is_property": any(isinstance(d, ast.Name) and d.id == 'property'
                                              for d in item.decorator_list)
                         }
                         class_data["methods"].append(method_data)
-                
+
                 classes.append(class_data)
-        
+
         return classes
-    
+
     def _get_function_signature(self, node: ast.FunctionDef) -> str:
         """Extract complete function signature with type hints"""
         args = []
@@ -332,13 +332,13 @@ class CodeAnalyzer:
             if arg.annotation:
                 arg_str += f": {ast.unparse(arg.annotation) if hasattr(ast, 'unparse') else str(arg.annotation)}"
             args.append(arg_str)
-        
+
         returns = ""
         if node.returns:
             returns = f" -> {ast.unparse(node.returns) if hasattr(ast, 'unparse') else str(node.returns)}"
-        
+
         return f"({', '.join(args)}){returns}"
-    
+
     def _extract_exceptions(self, node: ast.FunctionDef) -> List[str]:
         """Extract all exceptions that can be raised"""
         exceptions = []
@@ -350,68 +350,68 @@ class CodeAnalyzer:
                     elif isinstance(child.exc, ast.Name):
                         exceptions.append(child.exc.id)
         return list(set(exceptions))
-    
+
     def _extract_return_type(self, node: ast.FunctionDef) -> Optional[str]:
         """Extract return type annotation"""
         if node.returns:
             return ast.unparse(node.returns) if hasattr(ast, 'unparse') else str(node.returns)
         return None
-    
+
     def _extract_error_handlers(self, tree: ast.AST) -> List[Dict]:
         """Extract all error handling patterns"""
         handlers = []
-        
+
         for node in ast.walk(tree):
             if isinstance(node, ast.Try):
                 handler_data = {
                     "line": node.lineno,
                     "handlers": []
                 }
-                
+
                 for handler in node.handlers:
                     exc_type = None
                     if handler.type:
                         exc_type = ast.unparse(handler.type) if hasattr(ast, 'unparse') else str(handler.type)
-                    
+
                     handler_data["handlers"].append({
                         "exception": exc_type,
                         "name": handler.name
                     })
-                
+
                 handlers.append(handler_data)
-        
+
         return handlers
 
 class DocumentationFormatter:
     """
     Formats documentation into multiple output formats with ZERO information loss.
-    
+
     Every single detail from code analysis is preserved across all formats:
     - JSON: Complete machine-readable representation
     - XML: Structured with proper schemas
     - Markdown: Human-readable with full technical detail
     - PDF: Generated using the actual pipeline
     """
-    
+
     def __init__(self, config: DocumentationConfig):
         self.config = config
         self.logger = logging.getLogger(__name__)
-        
+
         # Ensure all output directories exist
         for dir_path in [config.markdown_dir, config.json_dir, config.xml_dir, config.pdf_assets_dir]:
             dir_path.mkdir(parents=True, exist_ok=True)
-    
+
     def format_to_json(self, analysis_data: Dict) -> str:
         """
         Generate JSON documentation with COMPLETE data preservation.
-        
+
         The JSON format includes:
         - Every function with full AST analysis
         - All coordinate specifications with pixel precision
         - Complete validation rules
         - Full dependency graphs
         """
-        
+
         # Add metadata
         json_doc = {
             "metadata": {
@@ -421,10 +421,10 @@ class DocumentationFormatter:
             },
             "module": analysis_data
         }
-        
+
         # Add cross-references
         json_doc["cross_references"] = self._build_cross_references(analysis_data)
-        
+
         # Add validation specifications
         json_doc["validation_specs"] = {
             "forbidden_terms": self._get_forbidden_terms(),
@@ -435,108 +435,108 @@ class DocumentationFormatter:
                 "safe_zone_mandatory": True
             }
         }
-        
+
         return json.dumps(json_doc, indent=2, default=str)
-    
+
     def format_to_xml(self, analysis_data: Dict) -> str:
         """
         Generate XML documentation with proper schema definitions.
-        
+
         The XML includes:
         - Complete DTD for validation
         - All code elements as structured XML
         - Coordinate specifications in dedicated elements
         - Full preservation of all numeric constants
         """
-        
+
         root = ET.Element("documentation")
         root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
         root.set("generated", datetime.now().isoformat())
-        
+
         # Add module information
         module_elem = ET.SubElement(root, "module")
         module_elem.set("name", analysis_data["module_name"])
-        
+
         # Add docstring
         if analysis_data["docstring"]:
             docstring_elem = ET.SubElement(module_elem, "docstring")
             docstring_elem.text = analysis_data["docstring"]
-        
+
         # Add all functions with complete details
         functions_elem = ET.SubElement(module_elem, "functions")
         for func in analysis_data.get("functions", []):
             func_elem = ET.SubElement(functions_elem, "function")
             func_elem.set("name", func["name"])
             func_elem.set("line_start", str(func["line_start"]))
-            
+
             if func["docstring"]:
                 func_doc = ET.SubElement(func_elem, "docstring")
                 func_doc.text = func["docstring"]
-            
+
             sig_elem = ET.SubElement(func_elem, "signature")
             sig_elem.text = func["signature"]
-            
+
             # Add exceptions
             if func.get("raises"):
                 exceptions = ET.SubElement(func_elem, "exceptions")
                 for exc in func["raises"]:
                     exc_elem = ET.SubElement(exceptions, "exception")
                     exc_elem.text = exc
-        
+
         # Add coordinate specifications
         if "coordinate_specs" in analysis_data:
             coords_elem = ET.SubElement(module_elem, "coordinate_specifications")
-            
+
             # Critical zones with EXACT pixel specifications
             critical = ET.SubElement(coords_elem, "critical_zones")
-            
+
             spine = ET.SubElement(critical, "spine_dead_zone")
             spine.set("start_x", "1469")
             spine.set("end_x", "1931")
             spine.set("width", "462")
             spine.text = "ABSOLUTELY NO CONTENT MAY INTRUDE INTO THIS AREA"
-            
+
             left_safe = ET.SubElement(critical, "safe_zone")
             left_safe.set("page", "left")
             left_safe.set("x", "150")
             left_safe.set("y", "150")
             left_safe.set("width", "1319")
             left_safe.set("height", "1900")
-            
+
             right_safe = ET.SubElement(critical, "safe_zone")
             right_safe.set("page", "right")
             right_safe.set("x", "1931")
             right_safe.set("y", "150")
             right_safe.set("width", "1319")
             right_safe.set("height", "1900")
-        
+
         # Pretty print
         xml_str = ET.tostring(root, encoding='unicode')
         dom = minidom.parseString(xml_str)
         return dom.toprettyxml(indent="  ")
-    
+
     def format_to_markdown(self, analysis_data: Dict) -> str:
         """
         Generate Markdown documentation with COMPLETE technical detail.
-        
+
         This includes:
         - Full code examples showing CORRECT usage
         - Counter-examples showing WRONG usage
         - Pixel-perfect specifications
         - Complete validation rules
         """
-        
+
         md = []
-        
+
         # Header
         md.append(f"# {analysis_data['module_name']} Module Documentation\n")
         md.append(f"*Generated: {datetime.now().isoformat()}*\n")
-        
+
         # Module docstring
         if analysis_data["docstring"]:
             md.append("## Overview\n")
             md.append(f"{analysis_data['docstring']}\n")
-        
+
         # CRITICAL SPECIFICATIONS SECTION
         md.append("## CRITICAL SPECIFICATIONS - VIOLATION CAUSES TOTAL FAILURE\n")
         md.append("### Canvas Dimensions\n")
@@ -544,7 +544,7 @@ class DocumentationFormatter:
         md.append("- **DPI**: 300 (for print quality)\n")
         md.append("- **Color Space**: sRGB\n")
         md.append("- **Bit Depth**: 24\n\n")
-        
+
         md.append("### Spine Dead Zone - NO INTRUSION ALLOWED\n")
         md.append("```python\n")
         md.append("# CORRECT - Content avoids spine\n")
@@ -555,22 +555,22 @@ class DocumentationFormatter:
         md.append("# WRONG - This will cause binding to obscure content\n")
         md.append("place_content(1700, 500)  # THIS IS IN THE SPINE DEAD ZONE!\n")
         md.append("```\n\n")
-        
+
         # Functions with examples
         if analysis_data.get("functions"):
             md.append("## Functions\n")
-            
+
             for func in analysis_data["functions"]:
                 md.append(f"### `{func['name']}{func['signature']}`\n")
-                
+
                 if func["docstring"]:
                     md.append(f"{func['docstring']}\n")
-                
+
                 md.append(f"**Line**: {func['line_start']}\n")
-                
+
                 if func.get("raises"):
                     md.append(f"**Raises**: {', '.join(func['raises'])}\n")
-                
+
                 # Add CORRECT usage example
                 md.append("#### CORRECT Usage:\n")
                 md.append("```python\n")
@@ -579,14 +579,14 @@ class DocumentationFormatter:
                 md.append("    # Parameters with EXACT specifications\n")
                 md.append(")\n")
                 md.append("```\n")
-                
+
                 # Add WRONG usage example
                 md.append("#### WRONG Usage (WILL FAIL):\n")
                 md.append("```python\n")
                 md.append(f"# NEVER do this - violates specifications\n")
                 md.append(f"bad_result = {func['name']}()  # Missing required parameters!\n")
                 md.append("```\n\n")
-        
+
         # Validation rules
         md.append("## Validation Rules\n")
         md.append("### Forbidden Terms That Break Authenticity\n")
@@ -594,19 +594,19 @@ class DocumentationFormatter:
         forbidden = ['gradient', 'modern', 'UX', 'mobile', 'responsive', 'wireless', 'USB', 'LED']
         for term in forbidden:
             md.append(f"- `{term}` - Using this will cause immediate validation failure\n")
-        
+
         md.append("\n### Required Specifications for Period Accuracy\n")
         md.append("- **Mouse**: Must be Apple M0100, beige, rectangular, one-button\n")
         md.append("- **Computer**: Macintosh Plus with System 6\n")
         md.append("- **Storage**: 3.5\" floppy disk, 1.44MB capacity\n")
         md.append("- **Film**: Kodak Gold 400 with grain index 39\n")
-        
+
         return "".join(md)
-    
+
     def generate_pdf_documentation(self, analysis_data: Dict) -> Path:
         """
         Generate PDF documentation using the ACTUAL PIPELINE.
-        
+
         This proves the system works by using our own tools:
         1. Creates layout YAML for documentation pages
         2. Generates assets using the prompt system
@@ -614,32 +614,32 @@ class DocumentationFormatter:
         4. Applies post-processing effects
         5. Assembles final PDF
         """
-        
+
         self.logger.info("Generating PDF documentation using the pipeline...")
-        
+
         # Create layout configuration for documentation
         layout_config = self._create_documentation_layout(analysis_data)
-        
+
         # Save layout to temporary file
         layout_path = self.config.pdf_assets_dir / "doc_layout.yaml"
         with open(layout_path, 'w') as f:
             yaml.dump(layout_config, f)
-        
+
         # Generate individual page assets
         pages = []
         for spread_num, spread_config in enumerate(layout_config["spreads"]):
             page_path = self._generate_documentation_page(spread_num, spread_config)
             pages.append(page_path)
-        
+
         # Combine into PDF
         pdf_path = self.config.output_base / f"{analysis_data['module_name']}_documentation.pdf"
         self._assemble_pdf(pages, pdf_path)
-        
+
         return pdf_path
-    
+
     def _create_documentation_layout(self, analysis_data: Dict) -> Dict:
         """Create layout configuration for documentation pages"""
-        
+
         layout = {
             "spreads": [],
             "metadata": {
@@ -648,7 +648,7 @@ class DocumentationFormatter:
                 "style": "klutz_1996_authentic"
             }
         }
-        
+
         # Create title spread
         title_spread = {
             "spread_id": "doc_title",
@@ -687,19 +687,19 @@ class DocumentationFormatter:
                 ]
             }
         }
-        
+
         layout["spreads"].append(title_spread)
-        
+
         # Add function documentation spreads
         for func in analysis_data.get("functions", [])[:3]:  # First 3 functions as example
             func_spread = self._create_function_spread(func)
             layout["spreads"].append(func_spread)
-        
+
         return layout
-    
+
     def _create_function_spread(self, func: Dict) -> Dict:
         """Create spread layout for function documentation"""
-        
+
         return {
             "spread_id": f"func_{func['name']}",
             "left_page": {
@@ -757,30 +757,30 @@ class DocumentationFormatter:
                 ]
             }
         }
-    
+
     def _generate_documentation_page(self, page_num: int, spread_config: Dict) -> Path:
         """Generate a single documentation page using the compositor"""
-        
+
         # This would use the actual KlutzCompositor
         # For now, create a placeholder image
         img = Image.new('RGB', (3400, 2200), color=(248, 243, 229))
         draw = ImageDraw.Draw(img)
-        
+
         # Add spine binding holes
         for y in range(100, 2100, 75):
             draw.ellipse([1670, y, 1730, y+57], fill=(255, 255, 255), outline=(0, 0, 0))
-        
+
         # Add page content based on spread_config
         # This is simplified - actual implementation would use full compositor
-        
+
         page_path = self.config.pdf_assets_dir / f"page_{page_num:03d}.png"
         img.save(page_path, 'PNG', dpi=(300, 300))
-        
+
         return page_path
-    
+
     def _assemble_pdf(self, pages: List[Path], output_path: Path):
         """Assemble pages intfinal PDF"""
-        
+
         # Convert PNG pages to PDF using Pillow
         images = []
         for page_path in pages:
@@ -789,7 +789,7 @@ class DocumentationFormatter:
             if img.mode != 'RGB':
                 img = img.convert('RGB')
             images.append(img)
-        
+
         if images:
             # Save as PDF with all pages
             images[0].save(
@@ -801,9 +801,9 @@ class DocumentationFormatter:
                 quality=95
             )
             self.logger.info(f"PDF documentation generated: {output_path}")
-        
+
         return output_path
-    
+
     def _get_forbidden_terms(self) -> List[str]:
         """Get complete list of forbidden terms from validator"""
         return [
@@ -823,7 +823,7 @@ class DocumentationFormatter:
             'transparency', 'opacity slider', 'layer mask',
             'bezier curve', 'vector graphics', 'SVG'
         ]
-    
+
     def _get_required_specs(self) -> Dict:
         """Get complete required specifications"""
         return {
@@ -844,17 +844,17 @@ class DocumentationFormatter:
                 'forbidden': ['CD', 'DVD', 'USB drive', 'cloud storage']
             }
         }
-    
+
     def _build_cross_references(self, analysis_data: Dict) -> Dict:
         """Build complete cross-reference map between code elements"""
-        
+
         refs = {
             "function_calls": {},
             "class_usage": {},
             "constant_references": {},
             "coordinate_dependencies": {}
         }
-        
+
         # Map function calls
         for func in analysis_data.get("functions", []):
             refs["function_calls"][func["name"]] = {
@@ -862,7 +862,7 @@ class DocumentationFormatter:
                 "called_by": [],  # Functions that call this function
                 "line": func["line_start"]
             }
-        
+
         # Map coordinate dependencies
         if "coordinate_specs" in analysis_data:
             for coord in analysis_data["coordinate_specs"].get("positioning", []):
@@ -871,33 +871,33 @@ class DocumentationFormatter:
                     "used_in": [],  # List of functions using this coordinate
                     "critical": any(val in [1469, 1931, 462, 3400, 2200] for val in coord["values"])
                 }
-        
+
         return refs
 
 class AssetDocumentationGenerator:
     """
     Generates documentation specifically for asset creation.
-    
+
     This provides EXACT specifications for every atomic asset needed:
     - Pixel-perfect dimensions for each element type
     - Complete prompt templates with all required parameters
     - Validation rules for each asset type
     - Examples of CORRECT vs WRONG implementations
     """
-    
+
     def __init__(self, config: DocumentationConfig):
         self.config = config
         self.logger = logging.getLogger(__name__)
-        
+
     def generate_asset_guide(self) -> Dict[str, str]:
         """Generate complete asset creation guide"""
-        
+
         guide = {
             "title": "Complete Asset Creation Specifications",
             "version": "1.0.0",
             "sections": {}
         }
-        
+
         # Document each asset type with COMPLETE specifications
         asset_types = [
             "graphic_photo_instructional",
@@ -909,15 +909,15 @@ class AssetDocumentationGenerator:
             "container_embossed_featurebox",
             "graphic_spiral_binding"
         ]
-        
+
         for asset_type in asset_types:
             guide["sections"][asset_type] = self._document_asset_type(asset_type)
-        
+
         return guide
-    
+
     def _document_asset_type(self, asset_type: str) -> Dict:
         """Document a specific asset type with ALL specifications"""
-        
+
         specs = {
             "graphic_photo_instructional": {
                 "description": "Instructional photographs showing hands using computer equipment",
@@ -1007,7 +1007,7 @@ class AssetDocumentationGenerator:
 </nano_banana_prompt>
 """
             },
-            
+
             "container_featurebox": {
                 "description": "Solid color containers with hard-edged shadows",
                 "dimensions": {
@@ -1056,7 +1056,7 @@ class AssetDocumentationGenerator:
                     "required_angle": 90
                 }
             },
-            
+
             "graphic_pixelart": {
                 "description": "8-bit style pixel art sprites",
                 "dimensions": {
@@ -1105,26 +1105,26 @@ class AssetDocumentationGenerator:
                 }
             }
         }
-        
+
         return specs.get(asset_type, {
             "description": f"Specifications for {asset_type}",
             "error": "Complete specifications not yet documented"
         })
-    
+
     def generate_layout_guide(self) -> str:
         """
         Generate guide for layout creators with EXACT coordinate specifications.
-        
+
         This includes:
         - Every safe zone with pixel boundaries
         - Spine dead zone coordinates
         - Element positioning rules
         - Rotation limits for each element type
         """
-        
+
         guide = []
         guide.append("# Complete Layout Creation Guide\n\n")
-        
+
         guide.append("## CRITICAL COORDINATE SPECIFICATIONS\n\n")
         guide.append("### Canvas Dimensions (IMMUTABLE)\n")
         guide.append("```yaml\n")
@@ -1134,7 +1134,7 @@ class AssetDocumentationGenerator:
         guide.append("  dpi: 300\n")
         guide.append("  color_space: sRGB\n")
         guide.append("```\n\n")
-        
+
         guide.append("### Spine Dead Zone (NO INTRUSION ALLOWED)\n")
         guide.append("```yaml\n")
         guide.append("spine_dead_zone:\n")
@@ -1144,7 +1144,7 @@ class AssetDocumentationGenerator:
         guide.append("  width: 462\n")
         guide.append("  rule: ABSOLUTELY NO CONTENT MAY BE PLACED HERE\n")
         guide.append("```\n\n")
-        
+
         guide.append("### Safe Zones for Content\n")
         guide.append("```yaml\n")
         guide.append("left_page_safe_zone:\n")
@@ -1160,7 +1160,7 @@ class AssetDocumentationGenerator:
         guide.append("  height: 1900\n")
         guide.append("  left_boundary: 1931  # Must not go below this\n")
         guide.append("```\n\n")
-        
+
         guide.append("## Element Positioning Rules\n\n")
         guide.append("### CORRECT Positioning Example\n")
         guide.append("```yaml\n")
@@ -1173,7 +1173,7 @@ class AssetDocumentationGenerator:
         guide.append("      dimensions: [600, 450]\n")
         guide.append("      # Right edge: 250 + 600 = 850 (< 1469) ✓\n")
         guide.append("```\n\n")
-        
+
         guide.append("### WRONG Positioning Example (WILL FAIL)\n")
         guide.append("```yaml\n")
         guide.append("# This element intrudes into the spine - FORBIDDEN\n")
@@ -1185,7 +1185,7 @@ class AssetDocumentationGenerator:
         guide.append("      dimensions: [600, 450]\n")
         guide.append("      # Right edge: 1000 + 600 = 1600 (> 1469) ✗ SPINE INTRUSION!\n")
         guide.append("```\n\n")
-        
+
         guide.append("## Rotation Limits by Element Type\n\n")
         guide.append("```yaml\n")
         guide.append("rotation_limits:\n")
@@ -1196,13 +1196,13 @@ class AssetDocumentationGenerator:
         guide.append("  graphic_doodle: 30  # Maximum ±30 degrees (more playful)\n")
         guide.append("  graphic_gui_recreation: 0  # NO rotation allowed\n")
         guide.append("```\n\n")
-        
+
         return "".join(guide)
 
 class SphinxIntegration:
     """
     Integrates Sphinx documentation generation for professional output.
-    
+
     Sphinx provides:
     - Automatic API documentation extraction
     - Cross-references between modules
@@ -1210,43 +1210,43 @@ class SphinxIntegration:
     - Search functionality
     - Version control integration
     """
-    
+
     def __init__(self, config: DocumentationConfig):
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.sphinx_dir = config.output_base / "sphinx"
-        
+
     def setup_sphinx_project(self):
         """
         Set up complete Sphinx project structure.
-        
+
         This creates:
         - conf.py with all required settings
         - index.rst as main documentation entry
         - Module documentation files
         - Static assets for custom styling
         """
-        
+
         self.sphinx_dir.mkdir(parents=True, exist_ok=True)
         source_dir = self.sphinx_dir / "source"
         source_dir.mkdir(exist_ok=True)
-        
+
         # Generate conf.py
         conf_content = self._generate_sphinx_conf()
         (source_dir / "conf.py").write_text(conf_content)
-        
+
         # Generate index.rst
         index_content = self._generate_index_rst()
         (source_dir / "index.rst").write_text(index_content)
-        
+
         # Generate module documentation files
         self._generate_module_docs()
-        
+
         self.logger.info("Sphinx project structure created")
-    
+
     def _generate_sphinx_conf(self) -> str:
         """Generate Sphinx configuration file"""
-        
+
         conf = f"""
 # Configuration file for Sphinx documentation
 # Generated for Klutz Workbook Technical Documentation
@@ -1302,10 +1302,10 @@ napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
 """
         return conf
-    
+
     def _generate_index_rst(self) -> str:
         """Generate main index.rst file"""
-        
+
         return """
 Klutz Workbook Technical Documentation
 =======================================
@@ -1320,7 +1320,7 @@ every color value, and every validation rule is documented with absolute precisi
 **CRITICAL RULE**: Any deviation from these specifications will cause total failure.
 
 .. warning::
-   
+
    **SPINE DEAD ZONE**: No content may be placed between x=1469 and x=1931.
    This 462-pixel zone is reserved for spiral binding. Violation causes content
    to be obscured by binding holes.
@@ -1328,31 +1328,31 @@ every color value, and every validation rule is documented with absolute precisi
 .. toctree::
    :maxdepth: 3
    :caption: Core Modules:
-   
+
    compositor
    validator
    prompt_generator
    post_processor
-   
+
 .. toctree::
    :maxdepth: 3
    :caption: Integration Modules:
-   
+
    gemini_integration
    nano_banana_integration
-   
+
 .. toctree::
    :maxdepth: 3
    :caption: Quality & Performance:
-   
+
    quality_assurance
    performance_optimization
    production_monitoring
-   
+
 .. toctree::
    :maxdepth: 2
    :caption: Specifications:
-   
+
    coordinate_specifications
    color_specifications
    validation_rules
@@ -1376,7 +1376,7 @@ Safe Zones
 
     X: 150 to 1469
     Y: 150 to 2050
-    
+
 **Right Page**::
 
     X: 1931 to 3250
@@ -1409,12 +1409,12 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 """
-    
+
     def _generate_module_docs(self):
         """Generate documentation for each module"""
-        
+
         source_dir = self.sphinx_dir / "source"
-        
+
         for module_name in self.config.modules_to_document:
             rst_content = f"""
 {module_name}
@@ -1426,9 +1426,9 @@ Indices and tables
    :show-inheritance:
    :private-members:
    :special-members:
-   
+
    .. warning::
-      
+
       This module has STRICT coordinate requirements.
       Any content placed in the spine zone (x=1469 to x=1931)
       will be rejected by validation.
@@ -1453,7 +1453,7 @@ Example Usage
 
    # Position element in left safe zone
    element.position = (250, 300)  # Well within x < 1469
-   
+
 **WRONG** usage (will fail validation):
 
 .. code-block:: python
@@ -1461,26 +1461,26 @@ Example Usage
    # THIS WILL FAIL - intrudes into spine
    element.position = (1500, 300)  # x=1500 is in dead zone!
 """
-            
+
             (source_dir / f"{module_name}.rst").write_text(rst_content)
-    
+
     def build_documentation(self, formats: List[str] = ['html', 'pdf']):
         """
         Build documentation in specified formats.
-        
+
         Supports:
         - HTML: Full searchable website
         - PDF: Print-ready documentation
         - ePub: E-reader format
         - LaTeX: For custom formatting
         """
-        
+
         for format_type in formats:
             self.logger.info(f"Building {format_type} documentation...")
-            
+
             build_dir = self.sphinx_dir / "build" / format_type
             build_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Run sphinx-build
             cmd = [
                 'sphinx-build',
@@ -1488,7 +1488,7 @@ Example Usage
                 str(self.sphinx_dir / "source"),
                 str(build_dir)
             ]
-            
+
             try:
                 result = subprocess.run(cmd, capture_output=True, text=True, check=True)
                 self.logger.info(f"{format_type} documentation built successfully")
@@ -1499,39 +1499,39 @@ Example Usage
 class MkDocsIntegration:
     """
     Alternative documentation with MkDocs for modern web output.
-    
+
     MkDocs provides:
     - Material theme for modern appearance
     - Built-in search
     - Mobile responsive design
     - Easy GitHub Pages deployment
     """
-    
+
     def __init__(self, config: DocumentationConfig):
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.mkdocs_dir = config.output_base / "mkdocs"
-        
+
     def setup_mkdocs_project(self):
         """Set up MkDocs project structure"""
-        
+
         self.mkdocs_dir.mkdir(parents=True, exist_ok=True)
         docs_dir = self.mkdocs_dir / "docs"
         docs_dir.mkdir(exist_ok=True)
-        
+
         # Generate mkdocs.yml
         mkdocs_config = self._generate_mkdocs_config()
         (self.mkdocs_dir / "mkdocs.yml").write_text(mkdocs_config)
-        
+
         # Generate main index
         index_content = self._generate_mkdocs_index()
         (docs_dir / "index.md").write_text(index_content)
-        
+
         self.logger.info("MkDocs project structure created")
-    
+
     def _generate_mkdocs_config(self) -> str:
         """Generate mkdocs.yml configuration"""
-        
+
         return """
 site_name: Klutz Workbook Technical Documentation
 site_description: Complete specifications with zero ambiguity
@@ -1607,10 +1607,10 @@ nav:
     - Correct Usage: examples/correct.md
     - Wrong Usage: examples/wrong.md
 """
-    
+
     def _generate_mkdocs_index(self) -> str:
         """Generate main index.md"""
-        
+
         return """
 # Klutz Workbook Technical Documentation
 
@@ -1690,7 +1690,7 @@ Film: Kodak Gold 400, grain index 39
 def build_documentation(self):
 """Build MkDocs documentation"""
   cmd = ['mkdocs', 'build', '--site-dir', str(self.mkdocs_dir / 'site')]
-  
+
   try:
       result = subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=str(self.mkdocs_dir))
       self.logger.info("MkDocs documentation built successfully")
@@ -1712,14 +1712,14 @@ This class coordinates:
 def __init__(self, config: DocumentationConfig = None):
     self.config = config or DocumentationConfig()
     self.logger = logging.getLogger(__name__)
-    
+
     # Initialize components
     self.analyzer = CodeAnalyzer()
     self.formatter = DocumentationFormatter(self.config)
     self.asset_docs = AssetDocumentationGenerator(self.config)
     self.sphinx = SphinxIntegration(self.config)
     self.mkdocs = MkDocsIntegration(self.config)
-    
+
     # Track generation statistics
     self.stats = {
         "modules_analyzed": 0,
@@ -1733,16 +1733,16 @@ def __init__(self, config: DocumentationConfig = None):
 def generate_complete_documentation(self):
     """
     Generate ALL documentation in ALL formats.
-    
+
     This proves the system works by using multiple approaches:
     1. Direct code analysis and extraction
     2. Multiple output formats (JSON, XML, Markdown)
     3. Professional documentation tools (Sphinx, MkDocs)
     4. Pipeline-generated PDF using our own system
     """
-    
+
     self.logger.info("Starting comprehensive documentation generation...")
-    
+
     # Analyze all modules
     all_analyses = {}
     for module_name in self.config.modules_to_document:
@@ -1753,69 +1753,69 @@ def generate_complete_documentation(self):
             self.stats["modules_analyzed"] += 1
             self.stats["functions_documented"] += len(analysis.get("functions", []))
             self.stats["classes_documented"] += len(analysis.get("classes", []))
-    
+
     # Generate documentation in all formats
     for module_name, analysis in all_analyses.items():
         self._generate_module_documentation(module_name, analysis)
-    
+
     # Generate asset creation guide
     asset_guide = self.asset_docs.generate_asset_guide()
     self._save_asset_guide(asset_guide)
-    
+
     # Generate layout guide
     layout_guide = self.asset_docs.generate_layout_guide()
     (self.config.markdown_dir / "layout_guide.md").write_text(layout_guide)
-    
+
     # Set up and build Sphinx documentation
     self.sphinx.setup_sphinx_project()
     self.sphinx.build_documentation(['html', 'pdf'])
     self.stats["formats_generated"].append("sphinx")
-    
+
     # Set up and build MkDocs documentation
     self.mkdocs.setup_mkdocs_project()
     self.mkdocs.build_documentation()
     self.stats["formats_generated"].append("mkdocs")
-    
+
     # Generate summary report
     self._generate_summary_report()
-    
+
     self.logger.info("Documentation generation complete!")
     return self.stats
 
 def _generate_module_documentation(self, module_name: str, analysis: Dict):
     """Generate documentation for a single module in all formats"""
-    
+
     self.logger.info(f"Generating documentation for {module_name}...")
-    
+
     # JSON format
     json_doc = self.formatter.format_to_json(analysis)
     json_path = self.config.json_dir / f"{module_name}.json"
     json_path.write_text(json_doc)
     self.stats["formats_generated"].append(f"json:{module_name}")
-    
+
     # XML format
     xml_doc = self.formatter.format_to_xml(analysis)
     xml_path = self.config.xml_dir / f"{module_name}.xml"
     xml_path.write_text(xml_doc)
     self.stats["formats_generated"].append(f"xml:{module_name}")
-    
+
     # Markdown format
     md_doc = self.formatter.format_to_markdown(analysis)
     md_path = self.config.markdown_dir / f"{module_name}.md"
     md_path.write_text(md_doc)
     self.stats["formats_generated"].append(f"markdown:{module_name}")
-    
+
     # PDF format (using pipeline)
     pdf_path = self.formatter.generate_pdf_documentation(analysis)
     self.stats["formats_generated"].append(f"pdf:{module_name}")
 
 def _save_asset_guide(self, guide: Dict):
     """Save asset guide in multiple formats"""
-    
+
     # JSON format
     json_path = self.config.json_dir / "asset_creation_guide.json"
     json_path.write_text(json.dumps(guide, indent=2))
-    
+
     # Markdown format
     md_content = self._format_asset_guide_markdown(guide)
     md_path = self.config.markdown_dir / "asset_creation_guide.md"
@@ -1823,47 +1823,47 @@ def _save_asset_guide(self, guide: Dict):
 
 def _format_asset_guide_markdown(self, guide: Dict) -> str:
     """Format asset guide as Markdown"""
-    
+
     md = []
     md.append(f"# {guide['title']}\n\n")
     md.append(f"*Version: {guide['version']}*\n\n")
-    
+
     for asset_type, specs in guide["sections"].items():
         md.append(f"## {asset_type}\n\n")
-        
+
         if isinstance(specs, dict):
             if "description" in specs:
                 md.append(f"{specs['description']}\n\n")
-            
+
             if "dimensions" in specs:
                 md.append("### Dimensions\n")
                 md.append("```yaml\n")
                 md.append(yaml.dump(specs["dimensions"], default_flow_style=False))
                 md.append("```\n\n")
-            
+
             if "requirements" in specs:
                 md.append("### Requirements\n")
                 md.append("```yaml\n")
                 md.append(yaml.dump(specs["requirements"], default_flow_style=False))
                 md.append("```\n\n")
-            
+
             if "forbidden" in specs:
                 md.append("### Forbidden (NEVER USE)\n")
                 for item in specs["forbidden"]:
                     md.append(f"- {item}\n")
                 md.append("\n")
-            
+
             if "prompt_template" in specs:
                 md.append("### XML Prompt Template\n")
                 md.append("```xml\n")
                 md.append(specs["prompt_template"])
                 md.append("\n```\n\n")
-    
+
     return "".join(md)
 
 def _generate_summary_report(self):
     """Generate summary report of documentation generation"""
-    
+
     report = {
         "timestamp": datetime.now().isoformat(),
         "statistics": self.stats,
@@ -1874,11 +1874,11 @@ def _generate_summary_report(self):
             "pdf_files": list(self.config.output_base.glob("*.pdf"))
         }
     }
-    
+
     # Save summary
     summary_path = self.config.output_base / "generation_summary.json"
     summary_path.write_text(json.dumps(report, indent=2, default=str))
-    
+
     # Log summary
     self.logger.info("=" * 60)
     self.logger.info("DOCUMENTATION GENERATION COMPLETE")
@@ -1889,7 +1889,3 @@ def _generate_summary_report(self):
     self.logger.info(f"Formats generated: {len(set(self.stats['formats_generated']))}")
     self.logger.info("=" * 60)
 ```
-
-
-
-

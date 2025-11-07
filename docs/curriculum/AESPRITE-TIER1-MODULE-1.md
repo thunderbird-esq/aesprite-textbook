@@ -488,5 +488,3 @@ Layer organization
 Opacity for depth
 Blend modes for atmosphere
 Color ramp application
-
-

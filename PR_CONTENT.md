@@ -2,7 +2,7 @@
 
 **Title:** feat: transform vaporware to production-ready system (F → A grade)
 
-**Base branch:** main (or your default branch)  
+**Base branch:** main (or your default branch)
 **Compare branch:** claude/code-review-audit-011CUpJuc6BuhPEskjHt1wJe
 
 ---

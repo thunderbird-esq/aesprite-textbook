@@ -5,19 +5,21 @@ Team 4: AI Integration & Processing
 """
 
 import argparse
-import logging
-import yaml
+import hashlib
 import json
-import time
+import logging
 import os
-from pathlib import Path
-from typing import Dict, List, Optional
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import hashlib
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import yaml
 
 try:
     import google.generativeai as genai
+
     GENAI_AVAILABLE = True
 except ImportError:
     GENAI_AVAILABLE = False
@@ -25,8 +27,7 @@ except ImportError:
 
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RateLimitConfig:
     """Rate limit configuration"""
+
     requests_per_minute: int = 60
     requests_per_hour: int = 1500
     retry_attempts: int = 3
@@ -60,13 +62,13 @@ class ResponseCache:
 
         if cache_file.exists():
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file, "r") as f:
                     cached = json.load(f)
                 # Check if cache is still valid (24 hours)
-                cached_time = datetime.fromisoformat(cached['timestamp'])
+                cached_time = datetime.fromisoformat(cached["timestamp"])
                 if datetime.now() - cached_time < timedelta(hours=24):
                     logger.debug(f"Cache hit for prompt hash {cache_key[:8]}")
-                    return cached['response']
+                    return cached["response"]
                 else:
                     logger.debug(f"Cache expired for {cache_key[:8]}")
             except Exception as e:
@@ -80,12 +82,16 @@ class ResponseCache:
         cache_file = self.cache_dir / f"{cache_key}.json"
 
         try:
-            with open(cache_file, 'w') as f:
-                json.dump({
-                    'timestamp': datetime.now().isoformat(),
-                    'prompt_preview': prompt[:100],
-                    'response': response
-                }, f, indent=2)
+            with open(cache_file, "w") as f:
+                json.dump(
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "prompt_preview": prompt[:100],
+                        "response": response,
+                    },
+                    f,
+                    indent=2,
+                )
             logger.debug(f"Cached response for {cache_key[:8]}")
         except Exception as e:
             logger.warning(f"Error writing cache: {e}")
@@ -133,11 +139,13 @@ class GeminiClient:
     Transforms layout YAML files into detailed prompts for image generation.
     """
 
-    def __init__(self,
-                 api_key: Optional[str] = None,
-                 model: str = "gemini-2.0-flash-exp",
-                 rate_limit_config: Optional[RateLimitConfig] = None,
-                 enable_cache: bool = True):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "gemini-2.0-flash-exp",
+        rate_limit_config: Optional[RateLimitConfig] = None,
+        enable_cache: bool = True,
+    ):
         """
         Initialize Gemini client.
 
@@ -147,7 +155,7 @@ class GeminiClient:
             rate_limit_config: Rate limiting configuration
             enable_cache: Enable response caching
         """
-        self.api_key = api_key or os.environ.get('GEMINI_API_KEY')
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         self.model_name = model
         self.rate_limiter = RateLimiter(rate_limit_config or RateLimitConfig())
         self.cache = ResponseCache() if enable_cache else None
@@ -187,25 +195,22 @@ class GeminiClient:
             List of generated XML prompts
         """
         # Load layout
-        with open(layout_yaml, 'r') as f:
+        with open(layout_yaml, "r") as f:
             layout = yaml.safe_load(f)
 
         prompts = []
 
         # Process both pages
-        for page_key in ['left_page', 'right_page']:
+        for page_key in ["left_page", "right_page"]:
             if page_key not in layout:
                 continue
 
-            elements = layout[page_key].get('elements', [])
+            elements = layout[page_key].get("elements", [])
             logger.info(f"Processing {len(elements)} elements from {page_key}")
 
             for element in elements:
                 try:
-                    prompt = self.generate_component_prompt(
-                        element.get('type', 'unknown'),
-                        element
-                    )
+                    prompt = self.generate_component_prompt(element.get("type", "unknown"), element)
                     prompts.append(prompt)
                     logger.info(f"Generated prompt for {element.get('id', 'unknown')}")
                 except Exception as e:
@@ -279,8 +284,8 @@ class GeminiClient:
                 if attempt < self.rate_limiter.config.retry_attempts - 1:
                     # Exponential backoff
                     delay = min(
-                        self.rate_limiter.config.base_delay * (2 ** attempt),
-                        self.rate_limiter.config.max_delay
+                        self.rate_limiter.config.base_delay * (2**attempt),
+                        self.rate_limiter.config.max_delay,
                     )
                     logger.info(f"Retrying in {delay}s...")
                     time.sleep(delay)
@@ -292,25 +297,38 @@ class GeminiClient:
 
     def _get_system_prompt(self) -> str:
         """Get the system prompt for Gemini"""
-        return """You are a specialized prompt engineer for a project recreating a 1996 Klutz Press computer graphics workbook. Your task is to transform simple descriptions into hyper-specific, quantitative XML prompts for the 'nano-banana' image generation model.
-
-**CRITICAL RULES FOR VISUAL PROMPT GENERATION:**
-1. **NO SUBJECTIVITY:** Never use words like "nice," "good," "cool," or "awesome." Every instruction must be a number, a coordinate, a hex code, or a precise technical term.
-2. **QUANTIFY EVERYTHING:** Use pixels (px), degrees (deg), hex codes (#FF6600), and specific photographic terms (f/11, 100mm macro lens).
-3. **1996 TECHNOLOGY ONLY:** The final aesthetic must be achievable with 1996-era desktop publishing tools. This means no gradients, no soft shadows, no modern blurs, and no antialiasing on bitmapped fonts.
-4. **FORBIDDEN AESTHETICS:** Any visual element, style, or design trend originating after 1997 is strictly forbidden from all generated images.
-
-**COLOR SYSTEM (70/20/10 RULE):**
-* **Klutz Primary (70%):** The foundational palette (Red, Blue, Yellow, etc.).
-* **Nickelodeon Accent (20%):** `#F57D0D` (Pantone 021 C) for energetic "splat" containers only.
-* **Goosebumps Theme (10%):** `#95C120` (Acid Green) for monster sprites or "glitch" effects only.
-
-You will be given a component description and must output a complete, valid XML prompt following the nano-banana schema."""
+        return (
+            "You are a specialized prompt engineer for a project recreating a 1996 "
+            "Klutz Press computer graphics workbook. Your task is to transform simple "
+            "descriptions into hyper-specific, quantitative XML prompts for the "
+            "'nano-banana' image generation model.\n\n"
+            "**CRITICAL RULES FOR VISUAL PROMPT GENERATION:**\n"
+            '1. **NO SUBJECTIVITY:** Never use words like "nice," "good," "cool," '
+            'or "awesome." Every instruction must be a number, a coordinate, a hex '
+            "code, or a precise technical term.\n"
+            "2. **QUANTIFY EVERYTHING:** Use pixels (px), degrees (deg), hex codes "
+            "(#FF6600), and specific photographic terms (f/11, 100mm macro lens).\n"
+            "3. **1996 TECHNOLOGY ONLY:** The final aesthetic must be achievable with "
+            "1996-era desktop publishing tools. This means no gradients, no soft "
+            "shadows, no modern blurs, and no antialiasing on bitmapped fonts.\n"
+            "4. **FORBIDDEN AESTHETICS:** Any visual element, style, or design trend "
+            "originating after 1997 is strictly forbidden from all generated "
+            "images.\n\n"
+            "**COLOR SYSTEM (70/20/10 RULE):**\n"
+            "* **Klutz Primary (70%):** The foundational palette (Red, Blue, "
+            "Yellow, etc.).\n"
+            "* **Nickelodeon Accent (20%):** `#F57D0D` (Pantone 021 C) for energetic "
+            '"splat" containers only.\n'
+            "* **Goosebumps Theme (10%):** `#95C120` (Acid Green) for monster sprites "
+            'or "glitch" effects only.\n\n'
+            "You will be given a component description and must output a complete, "
+            "valid XML prompt following the nano-banana schema."
+        )
 
     def _build_user_prompt(self, element_type: str, params: Dict) -> str:
         """Build user prompt from element parameters"""
-        element_id = params.get('id', 'unknown')
-        dimensions = params.get('dimensions', [800, 600])
+        element_id = params.get("id", "unknown")
+        dimensions = params.get("dimensions", [800, 600])
 
         prompt = f"""Generate an XML prompt for nano-banana to create element {element_id}:
 - Type: {element_type}
@@ -319,32 +337,32 @@ You will be given a component description and must output a complete, valid XML 
 """
 
         # Add type-specific details
-        if element_type == 'graphic_photo_instructional':
+        if element_type == "graphic_photo_instructional":
             prompt += f"""- Subject: {params.get('subject', 'computer hardware')}
 - Film: Kodak Gold 400
 - Style: 1996 Klutz Press instructional photography
 - Lighting: Professional softbox setup
 """
-        elif element_type == 'graphic_gui_recreation':
+        elif element_type == "graphic_gui_recreation":
             prompt += f"""- Software: {params.get('software', 'MacPaint')}
 - Display: Macintosh Plus monochrome
 - Resolution: 512x342
 - Style: 1996 System 6 interface
 """
-        elif element_type == 'graphic_pixelart':
-            prompt += f"""- Grid: 16x16 pixels
+        elif element_type == "graphic_pixelart":
+            prompt += """- Grid: 16x16 pixels
 - Palette: 16-color maximum
 - Style: NES/SNES era sprite
 - Scaling: Nearest-neighbor only
 """
-        elif element_type in ['container_featurebox', 'container_splat']:
+        elif element_type in ["container_featurebox", "container_splat"]:
             prompt += f"""- Shape: Irregular blob/splat
 - Border: 4px hard black outline
 - Fill: {params.get('fill_color', '#F57D0D')}
 - Shadow: Hard drop shadow, 3px right, 3px down
 """
 
-        if 'content' in params:
+        if "content" in params:
             prompt += f"- Text Content: {params['content'][:100]}\n"
 
         prompt += """
@@ -357,8 +375,9 @@ Output ONLY the XML, no explanations."""
         """Generate a mock XML response for testing"""
         # Extract element ID from prompt
         import re
-        match = re.search(r'element (\S+):', user_prompt)
-        element_id = match.group(1) if match else 'mock_element'
+
+        match = re.search(r"element (\S+):", user_prompt)
+        element_id = match.group(1) if match else "mock_element"
 
         return f"""<?xml version="1.0"?>
 <nano_banana_prompt>
@@ -381,33 +400,14 @@ Output ONLY the XML, no explanations."""
 
 def main():
     """CLI interface for Gemini integration"""
-    parser = argparse.ArgumentParser(
-        description='Transform layouts to prompts using Gemini API'
-    )
+    parser = argparse.ArgumentParser(description="Transform layouts to prompts using Gemini API")
+    parser.add_argument("--layout", required=True, help="Path to layout YAML file")
     parser.add_argument(
-        '--layout',
-        required=True,
-        help='Path to layout YAML file'
+        "--output-dir", required=True, help="Output directory for generated prompts"
     )
-    parser.add_argument(
-        '--output-dir',
-        required=True,
-        help='Output directory for generated prompts'
-    )
-    parser.add_argument(
-        '--api-key',
-        help='Gemini API key (or use GEMINI_API_KEY env var)'
-    )
-    parser.add_argument(
-        '--model',
-        default='gemini-2.0-flash-exp',
-        help='Gemini model to use'
-    )
-    parser.add_argument(
-        '--no-cache',
-        action='store_true',
-        help='Disable response caching'
-    )
+    parser.add_argument("--api-key", help="Gemini API key (or use GEMINI_API_KEY env var)")
+    parser.add_argument("--model", default="gemini-2.0-flash-exp", help="Gemini model to use")
+    parser.add_argument("--no-cache", action="store_true", help="Disable response caching")
 
     args = parser.parse_args()
 
@@ -416,11 +416,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Initialize client
-    client = GeminiClient(
-        api_key=args.api_key,
-        model=args.model,
-        enable_cache=not args.no_cache
-    )
+    client = GeminiClient(api_key=args.api_key, model=args.model, enable_cache=not args.no_cache)
 
     # Transform layout
     try:
@@ -431,7 +427,7 @@ def main():
         layout_name = Path(args.layout).stem
         for i, prompt in enumerate(prompts):
             output_file = output_dir / f"{layout_name}_element_{i:03d}.xml"
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write(prompt)
             logger.info(f"Wrote prompt to {output_file}")
 
@@ -445,5 +441,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

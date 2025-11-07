@@ -11,12 +11,12 @@ import hashlib
 
 class PromptGenerator:
     """Generates hyper-specific XML prompts from layout configs"""
-    
+
     def __init__(self):
         # Load master configuration
         with open('config/master_config.yaml', 'r') as f:
             self.config = yaml.safe_load(f)
-        
+
         # Component-specific prompt templates
         self.templates = {
             'graphic_photo_instructional': self.generate_photo_prompt,
@@ -27,7 +27,7 @@ class PromptGenerator:
             'graphic_doodle': self.generate_doodle_prompt,
             'container_embossed_featurebox': self.generate_embossed_prompt
         }
-        
+
         # Standard negative prompts by category
         self.negative_prompts = {
             'modern_tech': [
@@ -51,27 +51,27 @@ class PromptGenerator:
                 'abstract', 'conceptual', 'fine art'
             ]
         }
-    
+
     def generate_photo_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for instructional photography"""
-        
+
         # Extract specifications
         subject = element.get('subject', 'hand using mouse')
         camera_settings = element.get('camera', {})
         lighting = element.get('lighting', {})
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_photo_instructional</element_type>
-    
+
     <image_specifications>
         <dimensions width="{element['dimensions'][0]}" height="{element['dimensions'][1]}" />
         <resolution dpi="300" />
         <color_mode>RGB</color_mode>
         <bit_depth>24</bit_depth>
     </image_specifications>
-    
+
     <photographic_parameters>
         <film_stock>Kodak Gold 400</film_stock>
         <film_characteristics>
@@ -83,14 +83,14 @@ class PromptGenerator:
                 <shadows>slight_cyan_shift</shadows>
             </color_profile>
         </film_characteristics>
-        
+
         <camera_settings>
             <lens>{camera_settings.get('lens', '100mm macro')}</lens>
             <aperture>{camera_settings.get('aperture', 'f/11')}</aperture>
             <shutter_speed>{camera_settings.get('shutter', '1/125')}</shutter_speed>
             <focus_distance>{camera_settings.get('focus', '8 inches')}</focus_distance>
         </camera_settings>
-        
+
         <lighting_setup>
             <ambient_level>moderate</ambient_level>
             <key_light>
@@ -109,7 +109,7 @@ class PromptGenerator:
             </fill_light>
         </lighting_setup>
     </photographic_parameters>
-    
+
     <subject_description>
         <primary>{subject}</primary>
         <details>
@@ -121,14 +121,14 @@ class PromptGenerator:
             <background>solid color mousepad, royal blue fabric surface</background>
         </details>
     </subject_description>
-    
+
     <composition>
         <angle>high angle, approximately 45 degrees from horizontal</angle>
         <framing>mouse fills 60% of frame, hand partially visible</framing>
         <focus_point>mouse button and index finger</focus_point>
         <depth_of_field>moderate, f/11 for sharp detail throughout</depth_of_field>
     </composition>
-    
+
     <positive_prompt>
         Professional instructional photograph from 1996 children's computer book,
         8-year-old child's hand demonstrating proper grip on beige Apple M0100
@@ -142,7 +142,7 @@ class PromptGenerator:
         bright and approachable mood, slight film grain visible, authentic
         1990s color reproduction
     </positive_prompt>
-    
+
     <negative_prompt>
         {', '.join(self.negative_prompts['modern_tech'])},
         {', '.join(self.negative_prompts['modern_design'])},
@@ -153,39 +153,39 @@ class PromptGenerator:
         dark mood, low key lighting, high contrast
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def generate_container_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for feature box containers"""
-        
+
         bg_color = element.get('background', '#FFD700')
         border = element.get('border', '4px solid black')
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>container_featurebox</element_type>
-    
+
     <geometry>
         <dimensions width="{element['dimensions'][0]}" height="{element['dimensions'][1]}" />
         <rotation degrees="{element.get('rotation', 0)}" />
     </geometry>
-    
+
     <visual_properties>
         <background>
             <type>solid_color</type>
             <color>{bg_color}</color>
             <texture>none</texture>
         </background>
-        
+
         <border>
             <style>solid</style>
             <width>4px</width>
             <color>#000000</color>
             <corners>square</corners>
         </border>
-        
+
         <shadow>
             <type>hard_drop_shadow</type>
             <offset_x>3px</offset_x>
@@ -195,7 +195,7 @@ class PromptGenerator:
             <opacity>100%</opacity>
         </shadow>
     </visual_properties>
-    
+
     <positive_prompt>
         Flat rectangular container with solid {bg_color} background,
         thick 4 pixel black border with perfectly square corners,
@@ -204,29 +204,29 @@ class PromptGenerator:
         publishing aesthetic, primitive digital graphic design,
         no gradients or modern effects
     </positive_prompt>
-    
+
     <negative_prompt>
         gradient, soft shadow, blur, rounded corners, bevel,
         3D effect, transparency, anti-aliasing, modern design,
         subtle, sophisticated, professional, glossy, texture
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def generate_splat_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for Nickelodeon-style splat containers"""
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_splat_container</element_type>
-    
+
     <geometry>
         <dimensions width="{element['dimensions'][0]}" height="{element['dimensions'][1]}" />
         <rotation degrees="{element.get('rotation', 0)}" />
     </geometry>
-    
+
     <visual_properties>
         <splat_characteristics>
             <color>#F57D0D</color>  <!-- Nickelodeon Orange -->
@@ -235,7 +235,7 @@ class PromptGenerator:
             <splatter_points>3-5</splatter_points>
         </splat_characteristics>
     </visual_properties>
-    
+
     <positive_prompt>
         Nickelodeon-style orange splat shape, Pantone Orange 021 C color
         (#F57D0D), organic blob with irregular edges and 3-5 splatter points,
@@ -243,34 +243,34 @@ class PromptGenerator:
         branding aesthetic, energetic and playful shape, slightly asymmetric,
         like spilled paint or slime
     </positive_prompt>
-    
+
     <negative_prompt>
         gradient, soft edges, blur, drop shadow, 3D effect,
         perfect circle, geometric shape, modern design, subtle,
         transparency, texture, shading, highlights
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def generate_pixelart_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for pixel art sprites"""
-        
+
         palette = element.get('palette', 'NES_limited')
         magnification = element.get('magnification', 8)
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_pixelart</element_type>
-    
+
     <pixel_specifications>
         <base_resolution>32x32</base_resolution>
         <display_magnification>{magnification}x</display_magnification>
         <interpolation>nearest_neighbor</interpolation>
         <antialiasing>none</antialiasing>
     </pixel_specifications>
-    
+
     <color_palette>
         <type>{palette}</type>
         <colors>
@@ -292,51 +292,51 @@ class PromptGenerator:
             <color index="15">#008080</color> <!-- Teal -->
         </colors>
     </color_palette>
-    
+
     <subject>{element.get('subject', 'pixel monster sprite')}</subject>
-    
+
     <positive_prompt>
         8-bit pixel art sprite, 32x32 pixel base resolution scaled up {magnification}x
         with nearest neighbor interpolation, hard pixel edges with no anti-aliasing,
         limited {palette} color palette, retro video game aesthetic circa 1990,
         clear readable sprite design, solid colors per pixel, no blending
     </positive_prompt>
-    
+
     <negative_prompt>
         anti-aliasing, smooth edges, gradient, blur, high resolution,
         modern pixel art, detailed shading, transparency, soft pixels,
         interpolation artifacts, photorealistic, 3D rendering
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def generate_gui_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for GUI recreation (MacPaint/Aseprite)"""
-        
+
         software = element.get('software', 'MacPaint')
-        
+
         if software == 'MacPaint':
             xml_prompt = self.generate_macpaint_gui(element)
         else:
             xml_prompt = self.generate_aseprite_gui(element)
-        
+
         return xml_prompt
-    
+
     def generate_macpaint_gui(self, element: Dict[str, Any]) -> str:
         """Generate MacPaint interface recreation"""
-        
+
         return f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_gui_recreation</element_type>
-    
+
     <software_interface>
         <application>MacPaint 1.0</application>
         <os>Apple System 6</os>
         <year>1984-1990</year>
     </software_interface>
-    
+
     <interface_elements>
         <window>
             <title_bar>
@@ -345,12 +345,12 @@ class PromptGenerator:
                 <close_box>left</close_box>
                 <zoom_box>none</zoom_box>
             </title_bar>
-            
+
             <menu_bar>
                 <items>File Edit Goodies Font FontSize Style</items>
                 <font>Chicago 12pt</font>
             </menu_bar>
-            
+
             <tool_palette>
                 <position>left</position>
                 <tools>
@@ -362,28 +362,28 @@ class PromptGenerator:
                     <row6>oval polygon</row6>
                 </tools>
             </tool_palette>
-            
+
             <pattern_palette>
                 <position>bottom</position>
                 <patterns>38 standard MacPaint patterns</patterns>
                 <display>8x5 grid</display>
             </pattern_palette>
         </window>
-        
+
         <canvas>
             <dimensions>576x720</dimensions>
             <color_mode>1-bit monochrome</color_mode>
             <dithering>Atkinson dithering</dithering>
         </canvas>
     </interface_elements>
-    
+
     <visual_style>
         <colors>pure black and white only</colors>
         <fonts>Chicago bitmap font</fonts>
         <shadows>none</shadows>
         <effects>stippled patterns for gray simulation</effects>
     </visual_style>
-    
+
     <positive_prompt>
         Perfect recreation of MacPaint 1.0 interface from Apple System 6,
         monochrome black and white only, Chicago bitmap font for all text,
@@ -393,48 +393,48 @@ class PromptGenerator:
         Atkinson dithering for images, authentic 1984-1990 Macintosh
         software interface
     </positive_prompt>
-    
+
     <negative_prompt>
         color, grayscale, anti-aliasing, smooth fonts, gradients,
         shadows, modern UI, Windows, transparency, 3D effects,
         rounded corners, subtle design, contemporary interface
     </negative_prompt>
 </nano_banana_prompt>"""
-    
+
     def generate_aseprite_gui(self, element: Dict[str, Any]) -> str:
         """Generate simplified Aseprite interface for teaching"""
-        
+
         return f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_gui_recreation</element_type>
-    
+
     <software_interface>
         <application>Aseprite (simplified for kids)</application>
         <style>1996 software aesthetic</style>
     </software_interface>
-    
+
     <interface_elements>
         <color_picker>
             <type>RGB sliders</type>
             <display>simplified grid</display>
             <preset_palette>16 colors</preset_palette>
         </color_picker>
-        
+
         <tool_icons>
             <pencil>single pixel drawing</pencil>
             <eraser>pixel removal</eraser>
             <paint_bucket>flood fill</paint_bucket>
             <rectangle>shape tool</rectangle>
         </tool_icons>
-        
+
         <canvas_grid>
             <visible>true</visible>
             <size>32x32 pixels</size>
             <grid_lines>1px gray</grid_lines>
         </canvas_grid>
     </interface_elements>
-    
+
     <positive_prompt>
         Simplified pixel art software interface designed for children,
         basic tool palette with pencil eraser bucket and shapes,
@@ -442,24 +442,24 @@ class PromptGenerator:
         1996 software design aesthetic with gray 3D borders,
         simple and clear icons, educational software appearance
     </positive_prompt>
-    
+
     <negative_prompt>
         modern UI, flat design, complex interface, professional software,
         dark theme, transparency, advanced tools, layers panel,
         timeline, animation controls
     </negative_prompt>
 </nano_banana_prompt>"""
-    
+
     def generate_doodle_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for hand-drawn doodles"""
-        
+
         doodle_type = element.get('doodle_type', 'arrow')
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>graphic_doodle</element_type>
-    
+
     <doodle_specifications>
         <type>{doodle_type}</type>
         <style>hand_drawn</style>
@@ -467,13 +467,13 @@ class PromptGenerator:
         <color>#000000</color>
         <consistency>slightly_uneven</consistency>
     </doodle_specifications>
-    
+
     <characteristics>
         <line_quality>confident but imperfect</line_quality>
         <corners>slightly rounded from marker tip</corners>
         <ends>natural taper or blob from lifting marker</ends>
     </characteristics>
-    
+
     <positive_prompt>
         Hand-drawn {doodle_type} with thick black marker, confident
         single stroke, slightly uneven line weight, natural imperfections,
@@ -481,26 +481,26 @@ class PromptGenerator:
         3-5 pixel thick line, no perfectly straight lines,
         organic and energetic appearance
     </positive_prompt>
-    
+
     <negative_prompt>
         perfect geometry, vector graphics, thin line, pencil,
         tentative strokes, multiple strokes, shading, gradient,
         computer-generated, precise, mathematical, ruler-drawn
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def generate_embossed_prompt(self, element: Dict[str, Any]) -> str:
         """Generate XML prompt for embossed feature boxes"""
-        
+
         text = element.get('embossed_text', 'TIP!')
-        
+
         xml_prompt = f"""
 <nano_banana_prompt>
     <element_id>{element['id']}</element_id>
     <element_type>container_embossed_featurebox</element_type>
-    
+
     <embossing_specifications>
         <technique>blind_embossing</technique>
         <depth>15-25 microns</depth>
@@ -508,7 +508,7 @@ class PromptGenerator:
         <text>{text}</text>
         <font>Chicago or similar bold sans-serif</font>
     </embossing_specifications>
-    
+
     <visual_effect>
         <highlights>top and left edges of raised areas</highlights>
         <shadows>bottom and right edges of raised areas</shadows>
@@ -516,7 +516,7 @@ class PromptGenerator:
         <no_ink>true</no_ink>
         <no_foil>true</no_foil>
     </visual_effect>
-    
+
     <positive_prompt>
         Blind embossed text "{text}" pressed into paper from behind,
         raised bumpy 3D letters with hard-edged highlights on top-left,
@@ -524,19 +524,19 @@ class PromptGenerator:
         paper texture visible on raised surface, authentic embossing
         effect like Goosebumps book covers, tactile appearance
     </positive_prompt>
-    
+
     <negative_prompt>
         printed text, ink, foil, color, flat, 2D, Photoshop bevel effect,
         soft inner glow, gradient, smooth, digital effect, letterpress,
         debossing, metallic, glossy
     </negative_prompt>
 </nano_banana_prompt>"""
-        
+
         return xml_prompt
-    
+
     def create_gemini_metaprompt(self, element: Dict[str, Any]) -> str:
         """Create the prompt to send to Gemini for XML generation"""
-        
+
         metaprompt = f"""
 You are a specialized prompt engineer for a 1996 Klutz Press computer graphics workbook.
 Generate a hyper-specific XML prompt for the nano-banana image model.
@@ -566,38 +566,38 @@ The XML must follow this exact structure:
 
 Generate the complete XML prompt now.
 """
-        
+
         return metaprompt
-    
+
     def generate_all_prompts(self, layout_file: str) -> Dict[str, str]:
         """Generate all prompts for a layout"""
-        
+
         with open(layout_file, 'r') as f:
             layout = yaml.safe_load(f)
-        
+
         prompts = {}
-        
+
         for page in ['left_page', 'right_page']:
             for element in layout[page]['elements']:
                 element_type = element['type']
-                
+
                 if element_type in self.templates:
                     # Generate specific prompt
                     xml_prompt = self.templates[element_type](element)
                     prompts[element['id']] = xml_prompt
-                    
+
                     # Save to file
                     output_path = Path('prompts/components') / f"{element['id']}.xml"
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     output_path.write_text(xml_prompt)
-        
+
         return prompts
 
 
 # Usage example
 if __name__ == "__main__":
     generator = PromptGenerator()
-    
+
     # Test element
     test_element = {
         'id': 'L_photo_mouse_01',
@@ -607,11 +607,11 @@ if __name__ == "__main__":
         'subject': 'child hand using Apple mouse',
         'camera': {'lens': '100mm macro', 'aperture': 'f/11'}
     }
-    
+
     # Generate prompt
     xml_prompt = generator.generate_photo_prompt(test_element)
     print(xml_prompt)
-    
+
     # Generate all prompts for a layout
     prompts = generator.generate_all_prompts('config/layouts/spread_04_05.yaml')
     print(f"Generated {len(prompts)} prompts")

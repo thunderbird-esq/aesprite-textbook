@@ -13,21 +13,13 @@ Tests include:
 """
 
 import pytest
-from PIL import Image
-import numpy as np
-from pathlib import Path
 
-from test_framework import (
-    create_test_sprite,
-    create_test_config,
-    check_color_distribution,
-    detect_spine_intrusion,
-)
-
+from test_framework import check_color_distribution, create_test_sprite, detect_spine_intrusion
 
 # ============================================================================
 # Forbidden Terms Detection Tests
 # ============================================================================
+
 
 class TestForbiddenTermsDetection:
     """Test detection of forbidden terms in prompts."""
@@ -91,6 +83,7 @@ class TestForbiddenTermsDetection:
 # Allowed Modern Terms Tests
 # ============================================================================
 
+
 class TestAllowedModernTerms:
     """Test validation of allowed modern terms."""
 
@@ -127,6 +120,7 @@ class TestAllowedModernTerms:
 # Required Visual Terms Tests
 # ============================================================================
 
+
 class TestRequiredVisualTerms:
     """Test validation of required visual/hardware terms."""
 
@@ -137,8 +131,9 @@ class TestRequiredVisualTerms:
         prompt = "A pixel art sprite of a computer with keyboard and mouse"
 
         found_terms = [term for term in required if term in prompt.lower()]
-        assert len(found_terms) >= min_required, \
-            f"Should have at least {min_required} hardware terms"
+        assert (
+            len(found_terms) >= min_required
+        ), f"Should have at least {min_required} hardware terms"
 
     def test_insufficient_hardware_terms(self, test_config):
         """Test detection of insufficient hardware terms."""
@@ -147,8 +142,7 @@ class TestRequiredVisualTerms:
         prompt = "A pixel art sprite of a desk"
 
         found_terms = [term for term in required if term in prompt.lower()]
-        assert len(found_terms) < min_required, \
-            "Should detect insufficient hardware terms"
+        assert len(found_terms) < min_required, "Should detect insufficient hardware terms"
 
     def test_exact_minimum_hardware_terms(self, test_config):
         """Test prompt with exactly minimum required hardware terms."""
@@ -157,13 +151,13 @@ class TestRequiredVisualTerms:
         prompt = "A computer with keyboard"
 
         found_terms = [term for term in required if term in prompt.lower()]
-        assert len(found_terms) >= min_required, \
-            "Should accept exact minimum hardware terms"
+        assert len(found_terms) >= min_required, "Should accept exact minimum hardware terms"
 
 
 # ============================================================================
 # Image Dimension Validation Tests
 # ============================================================================
+
 
 class TestImageDimensionValidation:
     """Test validation of image dimensions."""
@@ -185,7 +179,7 @@ class TestImageDimensionValidation:
         img = create_test_sprite(size=(8, 8))
 
         width, height = img.size
-        is_valid = (width >= dim_config["min"] and height >= dim_config["min"])
+        is_valid = width >= dim_config["min"] and height >= dim_config["min"]
         assert not is_valid, "Should reject images smaller than minimum"
 
     def test_dimension_too_large(self, test_config):
@@ -194,7 +188,7 @@ class TestImageDimensionValidation:
         img = create_test_sprite(size=(128, 128))
 
         width, height = img.size
-        is_valid = (width <= dim_config["max"] and height <= dim_config["max"])
+        is_valid = width <= dim_config["max"] and height <= dim_config["max"]
         assert not is_valid, "Should reject images larger than maximum"
 
     def test_dimension_at_minimum(self, test_config):
@@ -204,7 +198,7 @@ class TestImageDimensionValidation:
         img = create_test_sprite(size=(min_size, min_size))
 
         width, height = img.size
-        is_valid = (width >= dim_config["min"] and height >= dim_config["min"])
+        is_valid = width >= dim_config["min"] and height >= dim_config["min"]
         assert is_valid, "Should accept images at minimum size"
 
     def test_dimension_at_maximum(self, test_config):
@@ -214,7 +208,7 @@ class TestImageDimensionValidation:
         img = create_test_sprite(size=(max_size, max_size))
 
         width, height = img.size
-        is_valid = (width <= dim_config["max"] and height <= dim_config["max"])
+        is_valid = width <= dim_config["max"] and height <= dim_config["max"]
         assert is_valid, "Should accept images at maximum size"
 
     def test_recommended_dimension(self, test_config):
@@ -222,13 +216,15 @@ class TestImageDimensionValidation:
         dim_config = test_config["validation"]["image_dimensions"]
         recommended = dim_config["recommended"]
 
-        assert dim_config["min"] <= recommended <= dim_config["max"], \
-            "Recommended size should be within valid range"
+        assert (
+            dim_config["min"] <= recommended <= dim_config["max"]
+        ), "Recommended size should be within valid range"
 
 
 # ============================================================================
 # Color Distribution Tests
 # ============================================================================
+
 
 class TestColorDistributionLimits:
     """Test validation of color distribution in images."""
@@ -257,8 +253,9 @@ class TestColorDistributionLimits:
         img = create_test_sprite(size=(32, 32), pattern="computer")
 
         _, stats = check_color_distribution(img)
-        assert stats["unique_colors"] >= min_colors, \
-            f"Should have at least {min_colors} unique colors"
+        assert (
+            stats["unique_colors"] >= min_colors
+        ), f"Should have at least {min_colors} unique colors"
 
     def test_color_distribution_computer_sprite(self, test_config):
         """Test color distribution of computer sprite pattern."""
@@ -273,6 +270,7 @@ class TestColorDistributionLimits:
 # ============================================================================
 # Layout Spine Intrusion Tests
 # ============================================================================
+
 
 class TestLayoutSpineIntrusion:
     """Test detection of elements intruding into spine dead zone."""
@@ -339,6 +337,7 @@ class TestLayoutSpineIntrusion:
 # Rotation Limits Tests
 # ============================================================================
 
+
 class TestRotationLimits:
     """Test validation of rotation constraints."""
 
@@ -347,28 +346,30 @@ class TestRotationLimits:
         max_rotation = test_config["validation"]["layout"]["max_rotation_degrees"]
 
         for angle in [0, 5, 10, 15]:
-            assert abs(angle) <= max_rotation, \
-                f"Rotation {angle}° should be within ±{max_rotation}°"
+            assert (
+                abs(angle) <= max_rotation
+            ), f"Rotation {angle}° should be within ±{max_rotation}°"
 
     def test_rotation_exceeds_limits(self, test_config):
         """Test detection of excessive rotation."""
         max_rotation = test_config["validation"]["layout"]["max_rotation_degrees"]
 
         for angle in [20, 30, 45, 90]:
-            assert abs(angle) > max_rotation, \
-                f"Rotation {angle}° should exceed ±{max_rotation}°"
+            assert abs(angle) > max_rotation, f"Rotation {angle}° should exceed ±{max_rotation}°"
 
     def test_negative_rotation_limits(self, test_config):
         """Test that negative rotations are also limited."""
         max_rotation = test_config["validation"]["layout"]["max_rotation_degrees"]
 
         for angle in [-5, -10, -15]:
-            assert abs(angle) <= max_rotation, \
-                f"Negative rotation {angle}° should be within ±{max_rotation}°"
+            assert (
+                abs(angle) <= max_rotation
+            ), f"Negative rotation {angle}° should be within ±{max_rotation}°"
 
         for angle in [-20, -30, -45]:
-            assert abs(angle) > max_rotation, \
-                f"Negative rotation {angle}° should exceed ±{max_rotation}°"
+            assert (
+                abs(angle) > max_rotation
+            ), f"Negative rotation {angle}° should exceed ±{max_rotation}°"
 
     def test_zero_rotation(self, test_config):
         """Test that zero rotation is always valid."""
@@ -379,15 +380,18 @@ class TestRotationLimits:
         """Test rotation at exactly the maximum limit."""
         max_rotation = test_config["validation"]["layout"]["max_rotation_degrees"]
 
-        assert abs(max_rotation) <= max_rotation, \
-            f"Rotation at exactly {max_rotation}° should be valid"
-        assert abs(max_rotation + 1) > max_rotation, \
-            f"Rotation at {max_rotation + 1}° should be invalid"
+        assert (
+            abs(max_rotation) <= max_rotation
+        ), f"Rotation at exactly {max_rotation}° should be valid"
+        assert (
+            abs(max_rotation + 1) > max_rotation
+        ), f"Rotation at {max_rotation + 1}° should be invalid"
 
 
 # ============================================================================
 # Integration Tests
 # ============================================================================
+
 
 @pytest.mark.integration
 class TestAssetValidatorIntegration:
@@ -415,7 +419,7 @@ class TestAssetValidatorIntegration:
         # Check dimensions
         dim_config = test_config["validation"]["image_dimensions"]
         width, height = bad_sprite.size
-        dim_valid = (width <= dim_config["max"] and height <= dim_config["max"])
+        dim_valid = width <= dim_config["max"] and height <= dim_config["max"]
         assert not dim_valid, "Oversized image should fail dimension check"
 
         # Check color distribution

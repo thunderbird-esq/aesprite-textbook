@@ -12,7 +12,6 @@ Tests include:
 """
 
 import pytest
-from test_framework import create_test_prompt_xml, create_test_config
 
 
 class TestPromptGeneration:
@@ -30,11 +29,7 @@ class TestPromptGeneration:
     def test_prompt_variable_substitution(self):
         """Test variable substitution in prompts."""
         template = "A {style} sprite of a {item} with {accessory}"
-        variables = {
-            "style": "pixel art",
-            "item": "computer",
-            "accessory": "keyboard"
-        }
+        variables = {"style": "pixel art", "item": "computer", "accessory": "keyboard"}
         prompt = template.format(**variables)
 
         assert "pixel art" in prompt
@@ -46,8 +41,7 @@ class TestPromptGeneration:
         template = "A {item} sprite, the {item} should have detail"
         prompt = template.format(item="computer")
 
-        assert prompt.count("computer") == 2, \
-            "Variable should be substituted in all occurrences"
+        assert prompt.count("computer") == 2, "Variable should be substituted in all occurrences"
 
 
 class TestForbiddenTermAvoidance:
@@ -103,8 +97,7 @@ class TestRequiredTermInclusion:
         prompt = "A pixel art sprite of a computer with keyboard and mouse"
 
         found = [term for term in required if term in prompt.lower()]
-        assert len(found) >= min_required, \
-            f"Should include at least {min_required} hardware terms"
+        assert len(found) >= min_required, f"Should include at least {min_required} hardware terms"
 
     def test_insufficient_required_terms(self, test_config):
         """Test detection of insufficient required terms."""
@@ -114,8 +107,7 @@ class TestRequiredTermInclusion:
         prompt = "A pixel art sprite"
 
         found = [term for term in required if term in prompt.lower()]
-        assert len(found) < min_required, \
-            "Should detect insufficient hardware terms"
+        assert len(found) < min_required, "Should detect insufficient hardware terms"
 
     def test_add_required_terms_to_prompt(self, test_config):
         """Test adding required terms to prompt."""
@@ -139,10 +131,8 @@ class TestXMLFormatValidation:
 
     def test_xml_contains_description(self, test_prompt_xml):
         """Test that XML contains description element."""
-        assert "<description>" in test_prompt_xml, \
-            "Should have description element"
-        assert "</description>" in test_prompt_xml, \
-            "Should close description element"
+        assert "<description>" in test_prompt_xml, "Should have description element"
+        assert "</description>" in test_prompt_xml, "Should close description element"
 
     def test_xml_contains_style(self, test_prompt_xml):
         """Test that XML contains style element."""
@@ -151,10 +141,8 @@ class TestXMLFormatValidation:
 
     def test_xml_contains_constraints(self, test_prompt_xml):
         """Test that XML contains constraints element."""
-        assert "<constraints>" in test_prompt_xml, \
-            "Should have constraints element"
-        assert "</constraints>" in test_prompt_xml, \
-            "Should close constraints element"
+        assert "<constraints>" in test_prompt_xml, "Should have constraints element"
+        assert "</constraints>" in test_prompt_xml, "Should close constraints element"
 
     def test_create_xml_from_parts(self):
         """Test creating XML from component parts."""
@@ -209,9 +197,9 @@ class TestPromptValidation:
 
         invalid_prompt = "A sprite with gradient shader and alpha blending"
 
-        has_forbidden = any(term in prompt.lower()
-                          for term in forbidden
-                          for prompt in [invalid_prompt])
+        has_forbidden = any(
+            term in prompt.lower() for term in forbidden for prompt in [invalid_prompt]
+        )
         assert has_forbidden, "Should reject prompt with forbidden terms"
 
 
@@ -224,7 +212,7 @@ class TestErrorHandling:
 
         try:
             # Missing 'accessory' variable
-            prompt = template.format(item="computer")
+            template.format(item="computer")
             assert False, "Should raise KeyError for missing variable"
         except KeyError:
             pass  # Expected behavior
@@ -244,7 +232,7 @@ class TestErrorHandling:
         try:
             prompt = template.format(**{"item-name": "computer"})
             assert "computer" in prompt
-        except:
+        except Exception:
             pass  # Some implementations might reject this
 
 
@@ -281,8 +269,8 @@ class TestPromptGenerationIntegration:
         # Simulate retry logic
         prompts = [
             "A sprite with gradient",  # Invalid
-            "A sprite with shader",    # Invalid
-            "A sprite of a computer with keyboard"  # Valid
+            "A sprite with shader",  # Invalid
+            "A sprite of a computer with keyboard",  # Valid
         ]
 
         forbidden = test_config["validation"]["forbidden_terms"]
@@ -293,10 +281,8 @@ class TestPromptGenerationIntegration:
             if attempts > max_attempts:
                 break
 
-            has_forbidden = any(term in attempt_prompt.lower()
-                              for term in forbidden)
-            found_required = [term for term in required
-                            if term in attempt_prompt.lower()]
+            has_forbidden = any(term in attempt_prompt.lower() for term in forbidden)
+            found_required = [term for term in required if term in attempt_prompt.lower()]
 
             if not has_forbidden and len(found_required) >= 2:
                 valid_prompt = attempt_prompt

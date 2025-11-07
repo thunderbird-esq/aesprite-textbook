@@ -12,11 +12,11 @@ global_settings:
     klutz_primary: 0.72
     nickelodeon_accent: 0.20
     goosebumps_theme: 0.08
-  
+
   texture_settings:
     paper_grain: 0.08
     emboss_depth: 20  # microns
-    
+
   print_settings:
     cmyk_misregistration: true
     dot_gain: 0.95
@@ -38,7 +38,7 @@ left_page:
         offset_x: 2
         offset_y: 2
         color: "#808080"
-    
+
     - id: "L_photo_mouse_01"
       type: "graphic_photo_instructional"
       filename: "photo_mouse_hand_01.png"
@@ -58,7 +58,7 @@ left_page:
       lighting:
         key: "45 degrees left, 30 degrees up"
         fill: "60 degrees right, reflector"
-    
+
     - id: "L_textcontainer_intro_01"
       type: "container_featurebox"
       position: [180, 800]
@@ -68,23 +68,23 @@ left_page:
       border: "4px solid black"
       internal_padding: 20
       text_content: |
-        Time to make some pixel art! Remember those 
-        awesome Nintendo characters? They're just 
-        colored squares arranged in a grid. You're 
-        going to learn the same tricks the pros use, 
-        but way easier because you're using Aseprite 
+        Time to make some pixel art! Remember those
+        awesome Nintendo characters? They're just
+        colored squares arranged in a grid. You're
+        going to learn the same tricks the pros use,
+        but way easier because you're using Aseprite
         instead of typing mysterious code!
-        
-        First, let's set up your workspace. Move your 
-        mouse (that beige thing in the photo above) 
-        and click on the color palette. Don't worry 
+
+        First, let's set up your workspace. Move your
+        mouse (that beige thing in the photo above)
+        and click on the color palette. Don't worry
         if you mess up - that's what Undo is for!
       font: "Helvetica"
       font_size: 16
       leading: 22
       color: "#000000"
       simplified_glyphs: true
-    
+
     - id: "L_splat_tip_01"
       type: "graphic_splat_container"
       position: [950, 650]
@@ -95,7 +95,7 @@ left_page:
       content_font: "Balloon_ExtraBold"
       content_size: 24
       content_color: "#FFFFFF"
-    
+
     - id: "L_doodle_arrow_01"
       type: "graphic_doodle"
       position: [850, 750]
@@ -105,7 +105,7 @@ left_page:
       points_to: "L_photo_mouse_01"
       line_weight: 4
       color: "#000000"
-    
+
     - id: "L_embossed_remember_01"
       type: "container_embossed_featurebox"
       position: [200, 1300]
@@ -131,7 +131,7 @@ right_page:
         - "tool_palette"
         - "canvas_grid"
       border: "1px solid black"
-    
+
     - id: "R_pixelart_mario_01"
       type: "graphic_pixelart"
       position: [2100, 1100]
@@ -149,7 +149,7 @@ right_page:
         - "#FDB5A4"  # Peach (skin)
         - "#8B4513"  # Brown (shoes, hair)
       border: "2px solid black"
-    
+
     - id: "R_textcontainer_steps_01"
       type: "container_featurebox"
       position: [2050, 1550]
@@ -164,16 +164,16 @@ right_page:
         3. Draw your outline first (pros always do this)
         4. Fill in the colors with the paint bucket
         5. Add shading with darker versions of each color
-        
-        Start with something simple like a mushroom or 
-        a ghost. Once you get the hang of it, try making 
+
+        Start with something simple like a mushroom or
+        a ghost. Once you get the hang of it, try making
         your own video game character!
       font: "Helvetica"
       font_size: 15
       leading: 20
       list_style: "numbered"
       list_indent: 30
-    
+
     - id: "R_photo_screen_01"
       type: "graphic_photo_instructional"
       position: [2700, 300]

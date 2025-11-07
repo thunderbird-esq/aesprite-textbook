@@ -20,7 +20,7 @@ GBStudio enforces the original DMG (Dot Matrix Game) palette:
 **Exact Color Values:**
 ```
 Color 0 (Lightest): #9BBD0F
-Color 1 (Light):    #8BAC0F  
+Color 1 (Light):    #8BAC0F
 Color 2 (Dark):     #306850
 Color 3 (Darkest):  #0F380F
 ```
@@ -506,7 +506,7 @@ func _ready():
     position_smoothing_enabled = false
     # Set zoom for pixel-perfect scaling
     zoom = Vector2(2, 2)  # Adjust based on your needs
-    
+
 func _process(_delta):
     # Snap camera to pixel grid
     global_position = global_position.round()
@@ -524,7 +524,7 @@ func _process(delta):
     if target:
         target_position = target.global_position
         global_position = global_position.lerp(
-            target_position.round(), 
+            target_position.round(),
             follow_speed * delta
         )
         # Final snap to pixel
@@ -613,17 +613,17 @@ const SPEED = 60.0  # Pixels per second
 
 func _physics_process(delta):
     var direction = Input.get_vector(
-        "ui_left", "ui_right", 
+        "ui_left", "ui_right",
         "ui_up", "ui_down"
     )
-    
+
     if direction:
         velocity = direction * SPEED
         # Snap to pixel grid
         position = position.round()
     else:
         velocity = Vector2.ZERO
-    
+
     move_and_slide()
 ```
 
@@ -631,5 +631,3 @@ func _physics_process(delta):
    - Verify pixel perfection
    - Check movement smoothness
    - Ensure UI scales correctly
-
-
