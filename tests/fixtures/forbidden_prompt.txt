@@ -1,0 +1,2 @@
+A pixel art sprite with gradient background and shader effects using alpha transparency and blend modes.
+This prompt contains multiple forbidden terms that should be detected by the validator.

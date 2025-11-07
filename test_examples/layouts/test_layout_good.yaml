@@ -1,7 +1,3 @@
-# spread_04_05.yaml
-# Layout definition for pages 4-5: Pixel Art Basics
-# Located in config/layouts/spread_04_05.yaml
-
 template: "workshop_layout"
 canvas: "aged_newsprint"
 
@@ -10,8 +6,8 @@ left_page:
     - id: "L_headline_pixelart_01"
       type: "text_headline"
       position: [200, 180]
-      dimensions: [800, 100]    # Provide area for text rendering
-      rotation: 0               # Headlines are rarely rotated
+      dimensions: [800, 100]
+      rotation: 0
       content: "PIXEL PERFECT!"
       font: "Chicago"
       size: 48
@@ -19,22 +15,18 @@ left_page:
 
     - id: "L_photo_mouse_01"
       type: "graphic_photo_instructional"
-      asset: "photo_mouse_hand_01.png"  # Filename in assets/generated/
+      asset: "photo_mouse_hand_01.png"
       position: [250, 300]
       dimensions: [600, 450]
-      rotation: 2               # Max rotation
-      border: "4px solid #F57D0D"  # Use Nickelodeon Orange for pop
+      rotation: 2
+      border: "4px solid #F57D0D"
 
     - id: "L_textcontainer_intro_01"
-      type: "text_body"         # Modified type
+      type: "text_body"
       position: [180, 800]
       dimensions: [900, 400]
       rotation: -1
-      content: |
-        Time to make some pixel art! Remember those awesome
-        Nintendo characters? They're just colored squares
-        arranged in a grid. You're going to learn the
-        same tricks the pros use, but way easier!
+      content: "Time to make some pixel art!"
       font: "Helvetica"
       size: 16
       leading: 22
@@ -45,13 +37,13 @@ right_page:
     - id: "R_gui_aseprite_01"
       type: "graphic_gui_recreation"
       asset: "aseprite_color_picker_01.png"
-      position: [1950, 200]
-      dimensions: [1200, 800]
+      position: [2150, 200]
+      dimensions: [1000, 800]
       rotation: 0
 
     - id: "R_pixelart_mario_01"
       type: "graphic_pixelart"
       asset: "monster_sprite_green_01.png"
       position: [2100, 1100]
-      dimensions: [400, 400]    # Final size after scaling
+      dimensions: [400, 400]
       rotation: -5

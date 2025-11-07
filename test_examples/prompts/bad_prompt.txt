@@ -1,0 +1,5 @@
+Create a flat design button with a gradient background.
+The UI should be minimalist and responsive for mobile devices.
+Add a soft shadow with blur radius of 10px.
+Include smartphone mockup with HD display.
+Use material design principles with modern UX patterns.

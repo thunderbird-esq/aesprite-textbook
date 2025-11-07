@@ -1,0 +1,53 @@
+validation:
+  forbidden_terms:
+    - gradient
+    - shader
+    - alpha
+    - transparency
+    - blend
+  allowed_modern_terms:
+    - computer
+    - keyboard
+    - mouse
+    - monitor
+  required_visual_terms:
+    - keyboard
+    - mouse
+    - monitor
+    - computer
+  min_hardware_terms: 2
+  image_dimensions:
+    min: 16
+    max: 64
+    recommended: 32
+  color_distribution:
+    max_single_color_ratio: 0.8
+    min_unique_colors: 3
+  layout:
+    spine_dead_zone_mm: 5
+    spine_dead_zone_px: 50
+    max_rotation_degrees: 15
+
+compositor:
+  spread_size:
+    - 2000
+    - 1400
+  background_color:
+    - 255
+    - 242
+    - 204
+  spiral_binding:
+    enabled: true
+    holes: 23
+    hole_diameter_mm: 6
+  page_curvature:
+    enabled: true
+    shadow_width: 30
+    shadow_opacity: 0.3
+  cmyk_misregistration:
+    enabled: true
+    max_shift_px: 2
+
+prompt_generation:
+  temperature: 0.7
+  max_attempts: 3

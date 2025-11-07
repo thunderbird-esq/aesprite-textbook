@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prompt>
+    <description>A pixel art sprite of a computer with keyboard and mouse on desk</description>
+    <style>aesprite pixel art</style>
+    <constraints>
+        <size>32x32</size>
+        <colors>limited palette</colors>
+        <perspective>front view</perspective>
+        <detail_level>medium</detail_level>
+    </constraints>
+    <required_elements>
+        <element>computer monitor</element>
+        <element>keyboard</element>
+        <element>mouse</element>
+    </required_elements>
+</prompt>
