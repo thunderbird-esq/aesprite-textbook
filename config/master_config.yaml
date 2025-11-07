@@ -9,6 +9,7 @@ project:
 
 technical:
   canvas_size: [3400, 2200]  # Two-page spread dimensions in pixels
+  spine_width: 462            # Spine dead zone width in pixels (center binding area)
   dpi: 300                    # Print-quality resolution
   color_space: "sRGB"         # Standard RGB color space
 
@@ -47,3 +48,11 @@ validation:
   check_color_ratios: true             # Verify 70/20/10 color distribution
   validate_safe_zones: true            # Ensure content respects margins
   prevent_spine_intrusion: true        # Block content from spine dead zone
+
+layout:
+  # Safe zone margins (in pixels from canvas edges)
+  safe_zones:
+    left: 100                          # Left page outer margin
+    right: 100                         # Right page outer margin
+    top: 100                           # Top margin
+    bottom: 100                        # Bottom margin
