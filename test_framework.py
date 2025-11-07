@@ -43,8 +43,8 @@ class MockGeminiClient:
     def __init__(self, api_key: str = "test_key"):
         self.api_key = api_key
         self.call_count = 0
-        self.last_prompt = None
-        self.responses = []
+        self.last_prompt: Optional[str] = None
+        self.responses: List[Dict[str, Any]] = []
         self._default_response = {
             "candidates": [
                 {
@@ -83,9 +83,9 @@ class MockNanoBananaClient:
     def __init__(self, api_key: str = "test_key"):
         self.api_key = api_key
         self.call_count = 0
-        self.last_prompt = None
-        self.last_params = {}
-        self.mock_image = None
+        self.last_prompt: Optional[str] = None
+        self.last_params: Dict[str, Any] = {}
+        self.mock_image: Optional[Image.Image] = None
 
     def generate_image(
         self, prompt: str, width: int = 32, height: int = 32, **kwargs
@@ -339,7 +339,7 @@ def check_color_distribution(
     num_unique = len(unique_colors)
 
     # Find most common color
-    color_counts = {}
+    color_counts: Dict[Tuple[int, ...], int] = {}
     for pixel in pixels:
         color = tuple(pixel)
         color_counts[color] = color_counts.get(color, 0) + 1
@@ -347,13 +347,15 @@ def check_color_distribution(
     max_count = max(color_counts.values())
     max_ratio = max_count / total_pixels
 
+    is_valid = max_ratio <= max_single_color_ratio and num_unique >= 3
+
     stats = {
         "unique_colors": num_unique,
         "max_color_ratio": max_ratio,
-        "is_valid": max_ratio <= max_single_color_ratio and num_unique >= 3,
+        "is_valid": is_valid,
     }
 
-    return stats["is_valid"], stats
+    return is_valid, stats
 
 
 def detect_spine_intrusion(
@@ -463,7 +465,7 @@ def run_tests(
     if markers:
         args.extend(["-m", markers])
 
-    return pytest.main(args)
+    return int(pytest.main(args))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""
-quality_assurance.py - Comprehensive QA system for generated content
+"""Comprehensive QA system for generated content.
+
+Comprehensive QA system for generated content
 Team 4: AI Integration & Processing
 """
 
@@ -9,7 +10,7 @@ import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class QAResult:
-    """Result of a single QA check"""
+    """Result of a single QA check."""
 
     check_name: str
     passed: bool
@@ -49,7 +50,7 @@ class QualityChecker:
     """
 
     def __init__(self):
-        """Initialize QA checker"""
+        """Initialize QA checker."""
         self.color_ratios = {
             "nickelodeon_orange_max": 0.30,
             "goosebumps_acid_max": 0.10,
@@ -104,18 +105,18 @@ class QualityChecker:
 
             # Check limits
             if nick_ratio > ratios["nickelodeon_orange_max"]:
-                logger.warning(f"Too much Nickelodeon orange: {nick_ratio:.1%}")
+                logger.warning("Too much Nickelodeon orange: {nick_ratio:.1%}")
                 return False
 
             if goose_ratio > ratios["goosebumps_acid_max"]:
-                logger.warning(f"Too much Goosebumps acid: {goose_ratio:.1%}")
+                logger.warning("Too much Goosebumps acid: {goose_ratio:.1%}")
                 return False
 
             logger.info("Color distribution check passed")
             return True
 
         except Exception as e:
-            logger.error(f"Color distribution check failed: {e}")
+            logger.error("Color distribution check failed: %s", e)
             return False
 
     def check_text_legibility(self, image_path: str, min_contrast: float = 4.5) -> bool:
@@ -139,10 +140,10 @@ class QualityChecker:
             # Calculate global contrast
             contrast = self._calculate_contrast(gray)
 
-            logger.info(f"Image contrast ratio: {contrast:.2f}")
+            logger.info("Image contrast ratio: {contrast:.2f}")
 
             if contrast < min_contrast:
-                logger.warning(f"Low contrast: {contrast:.2f} < {min_contrast}")
+                logger.warning("Low contrast: {contrast:.2f} < {min_contrast}")
                 return False
 
             # If OCR available, try to detect text
@@ -150,28 +151,28 @@ class QualityChecker:
                 try:
                     text = pytesseract.image_to_string(img)
                     if len(text.strip()) > 0:
-                        logger.info(f"OCR detected {len(text)} characters")
+                        logger.info("OCR detected %s characters", len(text))
                 except Exception as e:
-                    logger.debug(f"OCR failed: {e}")
+                    logger.debug("OCR failed: %s", e)
 
             logger.info("Text legibility check passed")
             return True
 
         except Exception as e:
-            logger.error(f"Text legibility check failed: {e}")
+            logger.error("Text legibility check failed: %s", e)
             return False
 
     def _calculate_contrast(self, gray_image: np.ndarray) -> float:
-        """Calculate contrast ratio of grayscale image"""
+        """Calculate contrast ratio of grayscale image."""
         # Calculate RMS contrast
-        std_dev = np.std(gray_image)
-        mean_val = np.mean(gray_image)
+        std_dev = float(np.std(gray_image))
+        mean_val = float(np.mean(gray_image))
 
         if mean_val > 0:
             rms_contrast = std_dev / mean_val
             # Convert to rough WCAG-style ratio
             contrast_ratio = 1 + (rms_contrast * 10)
-            return min(contrast_ratio, 21.0)  # Cap at WCAG maximum
+            return float(min(contrast_ratio, 21.0))  # Cap at WCAG maximum
         else:
             return 0.0
 
@@ -204,18 +205,18 @@ class QualityChecker:
                 violations.append("Modern flat design colors detected")
 
             if violations:
-                logger.warning(f"Authenticity violations: {', '.join(violations)}")
+                logger.warning("Authenticity violations: {', '.join(violations)}")
             else:
                 logger.info("Period authenticity check passed")
 
         except Exception as e:
-            logger.error(f"Authenticity check failed: {e}")
+            logger.error("Authenticity check failed: {e}")
             violations.append(f"Check error: {e}")
 
         return violations
 
     def _detect_gradients(self, img_array: np.ndarray) -> bool:
-        """Detect smooth gradients in image"""
+        """Detect smooth gradients in image."""
         # Sample horizontal lines for gradient detection
         gradient_detected = False
 
@@ -234,7 +235,7 @@ class QualityChecker:
         return gradient_detected
 
     def _detect_soft_shadows(self, img_array: np.ndarray) -> bool:
-        """Detect soft shadows (should be hard-edged)"""
+        """Detect soft shadows (should be hard-edged)."""
         gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
         edges = cv2.Canny(gray, 50, 150)
 
@@ -246,14 +247,14 @@ class QualityChecker:
         total_edges = np.sum(edges)
 
         if total_edges > 0:
-            avg_transition = transition_pixels / total_edges
+            avg_transition = float(transition_pixels) / float(total_edges)
             # Soft shadows have wide transitions
-            return avg_transition > 4
+            return bool(avg_transition > 4)
         else:
             return False
 
     def _detect_modern_colors(self, img_array: np.ndarray) -> bool:
-        """Detect modern flat design color palette"""
+        """Detect modern flat design color palette."""
         # Modern iOS/Material Design colors (too pure/saturated for 1996)
         modern_colors = [
             [0, 122, 255],  # iOS blue
@@ -273,7 +274,7 @@ class QualityChecker:
 
         return False
 
-    def generate_qa_report(self, spread_path: str) -> Dict:
+    def generate_qa_report(self, spread_path: str) -> Dict[str, Any]:
         """
         Generate comprehensive QA report for a spread.
 
@@ -283,13 +284,19 @@ class QualityChecker:
         Returns:
             Dictionary containing all QA results
         """
-        logger.info(f"Generating QA report for {spread_path}")
+        logger.info("Generating QA report for {spread_path}")
 
-        report = {"spread_path": spread_path, "checks": [], "overall_passed": True, "score": 0.0}
+        checks: List[QAResult] = []
+        report: Dict[str, Any] = {
+            "spread_path": spread_path,
+            "checks": checks,
+            "overall_passed": True,
+            "score": 0.0,
+        }
 
         # Color distribution check
         color_passed = self.check_color_distribution(spread_path)
-        report["checks"].append(
+        checks.append(
             QAResult(
                 check_name="color_distribution",
                 passed=color_passed,
@@ -302,7 +309,7 @@ class QualityChecker:
 
         # Text legibility check
         legibility_passed = self.check_text_legibility(spread_path)
-        report["checks"].append(
+        checks.append(
             QAResult(
                 check_name="text_legibility",
                 passed=legibility_passed,
@@ -314,7 +321,7 @@ class QualityChecker:
         # Period authenticity check
         violations = self.check_period_authenticity(spread_path)
         auth_passed = len(violations) == 0
-        report["checks"].append(
+        checks.append(
             QAResult(
                 check_name="period_authenticity",
                 passed=auth_passed,
@@ -327,12 +334,12 @@ class QualityChecker:
         )
 
         # Calculate overall score
-        scores = [check.score for check in report["checks"]]
-        report["score"] = np.mean(scores)
-        report["overall_passed"] = all(check.passed for check in report["checks"])
+        scores = [check.score for check in checks]
+        report["score"] = float(np.mean(scores))
+        report["overall_passed"] = all(check.passed for check in checks)
 
         # Convert dataclasses to dicts for JSON serialization
-        report["checks"] = [asdict(check) for check in report["checks"]]
+        report["checks"] = [asdict(check) for check in checks]
 
         logger.info(
             f"QA report complete - Score: {report['score']:.2f}, Passed: {report['overall_passed']}"
@@ -342,7 +349,7 @@ class QualityChecker:
 
 
 def main():
-    """CLI interface for quality assurance"""
+    """CLI interface for quality assurance."""
     parser = argparse.ArgumentParser(description="Quality assurance for generated spreads")
     parser.add_argument("--spread", required=True, help="Path to spread image file")
     parser.add_argument("--report", action="store_true", help="Generate detailed report")
@@ -381,7 +388,7 @@ def main():
             return 0 if report["overall_passed"] else 1
 
         except Exception as e:
-            logger.error(f"Report generation failed: {e}")
+            logger.error("Report generation failed: {e}")
             print(f"✗ Error: {e}")
             return 1
 
@@ -413,7 +420,7 @@ def main():
             return 0 if all_passed else 1
 
         except Exception as e:
-            logger.error(f"QA check failed: {e}")
+            logger.error("QA check failed: {e}")
             print(f"✗ Error: {e}")
             return 1
 

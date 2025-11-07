@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-asset_validator.py - Validates all VISUAL ASSETS and GENERATION PROMPTS
+"""Validate all VISUAL ASSETS and GENERATION PROMPTS.
+
+Validates all VISUAL ASSETS and GENERATION PROMPTS
 to meet period-authentic specifications for 1996 Klutz Press aesthetic.
 
 This script is the "Period Police" - the guardian of visual authenticity.
@@ -74,16 +75,16 @@ class AssetValidator:
             FileNotFoundError: If config file doesn't exist
             yaml.YAMLError: If config file is malformed
         """
-        logger.info(f"Initializing AssetValidator with config: {config_path}")
+        logger.info("Initializing AssetValidator with config: {config_path}")
 
         # Load configuration from master_config.yaml
         config_file = Path(config_path)
         if config_file.exists():
-            logger.info(f"Loading configuration from {config_path}")
-            with open(config_file, "r") as f:
+            logger.info("Loading configuration from %s", config_path)
+            with open(config_file, "r", encoding="utf-8") as f:
                 self.config = yaml.safe_load(f)
         else:
-            logger.warning(f"Config file not found: {config_path}, using defaults")
+            logger.warning("Config file not found: {config_path}, using defaults")
             self.config = {}
 
         # MODIFIED: This list applies to prompts for generating DESIGN ELEMENTS.
@@ -186,15 +187,15 @@ class AssetValidator:
         # Load canvas dimensions from config (with fallback defaults)
         if self.config and "technical" in self.config:
             canvas_size = self.config["technical"].get("canvas_size", [3400, 2200])
-            self.canvas_width: int = canvas_size[0]
-            self.canvas_height: int = canvas_size[1]
-            logger.info(f"Canvas dimensions from config: {self.canvas_width}x{self.canvas_height}")
+            self.canvas_width = canvas_size[0]
+            self.canvas_height = canvas_size[1]
+            logger.info("Canvas dimensions from config: {self.canvas_width}x{self.canvas_height}")
         else:
             # Fallback to hardcoded defaults
-            self.canvas_width: int = 3400
-            self.canvas_height: int = 2200
+            self.canvas_width = 3400
+            self.canvas_height = 2200
             logger.info(
-                f"Canvas dimensions from defaults: {self.canvas_width}x{self.canvas_height}"
+                "Canvas dimensions from defaults: %sx%s", self.canvas_width, self.canvas_height
             )
 
         # Load color distribution limits from config (with fallback defaults)
@@ -209,17 +210,18 @@ class AssetValidator:
             nickelodeon_limit = color_dist.get("nickelodeon_accent", 0.20) * 1.5
             goosebumps_limit = color_dist.get("goosebumps_theme", 0.10)
 
-            self.color_limits: Dict[str, float] = {
+            self.color_limits = {
                 "nickelodeon_orange": nickelodeon_limit,
                 "goosebumps_acid": goosebumps_limit,
             }
             logger.info(
-                f"Color limits from config: orange={nickelodeon_limit:.2%}, "
-                f"acid={goosebumps_limit:.2%}"
+                "Color limits from config: orange=%.1f%%, acid=%.1f%%",
+                nickelodeon_limit * 100,
+                goosebumps_limit * 100,
             )
         else:
             # Fallback to hardcoded defaults
-            self.color_limits: Dict[str, float] = {
+            self.color_limits = {
                 "nickelodeon_orange": 0.30,  # Maximum 30% (actually 20% target + buffer)
                 "goosebumps_acid": 0.10,  # Maximum 10%
             }
@@ -231,22 +233,24 @@ class AssetValidator:
             if spine_width is not None:
                 # Calculate spine boundaries like klutz_compositor does
                 spine_center = self.canvas_width // 2
-                self.spine_start: int = spine_center - (spine_width // 2)
-                self.spine_end: int = spine_center + (spine_width // 2)
+                self.spine_start = spine_center - (spine_width // 2)
+                self.spine_end = spine_center + (spine_width // 2)
                 logger.info(
-                    f"Spine boundaries from config: {self.spine_start}-"
-                    f"{self.spine_end} (width={spine_width})"
+                    "Spine boundaries from config: %s-%s (width=%s)",
+                    self.spine_start,
+                    self.spine_end,
+                    spine_width,
                 )
             else:
                 # Fallback to hardcoded defaults
-                self.spine_start: int = 1469
-                self.spine_end: int = 1931
-                logger.info(f"Spine boundaries from defaults: {self.spine_start}-{self.spine_end}")
+                self.spine_start = 1469
+                self.spine_end = 1931
+                logger.info("Spine boundaries from defaults: {self.spine_start}-{self.spine_end}")
         else:
             # Fallback to hardcoded defaults
-            self.spine_start: int = 1469
-            self.spine_end: int = 1931
-            logger.info(f"Spine boundaries from defaults: {self.spine_start}-{self.spine_end}")
+            self.spine_start = 1469
+            self.spine_end = 1931
+            logger.info("Spine boundaries from defaults: {self.spine_start}-{self.spine_end}")
 
         # Load rotation limits from config (with fallback defaults)
         if (
@@ -255,7 +259,7 @@ class AssetValidator:
             and "rotation_limits" in self.config["aesthetic_rules"]
         ):
             rotation_cfg = self.config["aesthetic_rules"]["rotation_limits"]
-            self.rotation_limits: Dict[str, float] = {
+            self.rotation_limits = {
                 "text": float(rotation_cfg.get("text", 5)),
                 "text_headline": float(rotation_cfg.get("text", 5)),
                 "text_body": float(rotation_cfg.get("text", 5)),
@@ -265,13 +269,14 @@ class AssetValidator:
                 "graphic_photo_instructional": float(rotation_cfg.get("photos", 10)),
             }
             logger.info(
-                f"Rotation limits from config: text={self.rotation_limits['text']}°, "
-                f"containers={self.rotation_limits['containers']}°, "
-                f"photos={self.rotation_limits['photos']}°"
+                "Rotation limits from config: text=%s°, containers=%s°, photos=%s°",
+                self.rotation_limits["text"],
+                self.rotation_limits["containers"],
+                self.rotation_limits["photos"],
             )
         else:
             # Fallback to hardcoded defaults
-            self.rotation_limits: Dict[str, float] = {
+            self.rotation_limits = {
                 "text": 5.0,
                 "text_headline": 5.0,
                 "text_body": 5.0,
@@ -285,25 +290,28 @@ class AssetValidator:
         # Load safe zone margins from config (with fallback defaults)
         if self.config and "layout" in self.config and "safe_zones" in self.config["layout"]:
             safe_zones = self.config["layout"]["safe_zones"]
-            self.safe_zone_left: int = safe_zones.get("left", 100)
-            self.safe_zone_right: int = safe_zones.get("right", 100)
-            self.safe_zone_top: int = safe_zones.get("top", 100)
-            self.safe_zone_bottom: int = safe_zones.get("bottom", 100)
+            self.safe_zone_left = safe_zones.get("left", 100)
+            self.safe_zone_right = safe_zones.get("right", 100)
+            self.safe_zone_top = safe_zones.get("top", 100)
+            self.safe_zone_bottom = safe_zones.get("bottom", 100)
             logger.info(
-                f"Safe zones from config: L={self.safe_zone_left}, R={self.safe_zone_right}, "
-                f"T={self.safe_zone_top}, B={self.safe_zone_bottom}"
+                "Safe zones from config: L=%s, R=%s, T=%s, B=%s",
+                self.safe_zone_left,
+                self.safe_zone_right,
+                self.safe_zone_top,
+                self.safe_zone_bottom,
             )
         else:
             # Fallback to hardcoded defaults
-            self.safe_zone_left: int = 100
-            self.safe_zone_right: int = 100
-            self.safe_zone_top: int = 100
-            self.safe_zone_bottom: int = 100
+            self.safe_zone_left = 100
+            self.safe_zone_right = 100
+            self.safe_zone_top = 100
+            self.safe_zone_bottom = 100
             logger.info("Safe zones from defaults: L=R=T=B=100px")
 
-        logger.info(f"Loaded {len(self.forbidden_design_terms)} forbidden terms")
-        logger.info(f"Loaded {len(self.allowed_modern_terms_in_prompts)} allowed modern terms")
-        logger.info(f"Loaded {len(self.required_visual_terms)} required term categories")
+        logger.info("Loaded {len(self.forbidden_design_terms)} forbidden terms")
+        logger.info("Loaded {len(self.allowed_modern_terms_in_prompts)} allowed modern terms")
+        logger.info("Loaded {len(self.required_visual_terms)} required term categories")
 
     def validate_visual_prompt(self, prompt_text: str) -> List[str]:
         """Check a generation prompt for anachronistic design terms.
@@ -346,7 +354,7 @@ class AssetValidator:
                     f"Forbidden design term in prompt: '{term}' - "
                     f"This term represents post-1996 design concepts"
                 )
-                logger.warning(f"Found forbidden term: {term}")
+                logger.warning("Found forbidden term: {term}")
 
         # Check for required terms when depicting hardware/software
         for category, required_terms in self.required_visual_terms.items():
@@ -357,10 +365,10 @@ class AssetValidator:
                         f"Missing required visual terminology for '{category}'. "
                         f"Must include one of: {', '.join(required_terms)}"
                     )
-                    logger.warning(f"Missing required terms for category: {category}")
+                    logger.warning("Missing required terms for category: {category}")
 
         if violations:
-            logger.error(f"Prompt validation failed with {len(violations)} violations")
+            logger.error("Prompt validation failed with {len(violations)} violations")
         else:
             logger.info("Prompt validation passed")
 
@@ -388,19 +396,19 @@ class AssetValidator:
             >>> if violations:
             ...     print("Image validation failed:", violations)
         """
-        logger.info(f"Validating image asset: {image_path}")
+        logger.info("Validating image asset: {image_path}")
         violations: List[str] = []
         path = Path(image_path)
 
         # Check file existence
         if not path.exists():
             violations.append(f"Image file does not exist: {image_path}")
-            logger.error(f"File not found: {image_path}")
+            logger.error("File not found: {image_path}")
             return violations
 
         if not path.is_file():
             violations.append(f"Path is not a file: {image_path}")
-            logger.error(f"Not a file: {image_path}")
+            logger.error("Not a file: {image_path}")
             return violations
 
         try:
@@ -408,7 +416,7 @@ class AssetValidator:
             image = Image.open(image_path)
             width, height = image.size
 
-            logger.info(f"Image dimensions: {width}x{height}, mode: {image.mode}")
+            logger.info("Image dimensions: {width}x{height}, mode: {image.mode}")
 
             # Check dimensions are sensible
             if width == 0 or height == 0:
@@ -429,7 +437,7 @@ class AssetValidator:
                     f"Invalid file format: {image.format} - "
                     f"Only PNG format is supported for transparency"
                 )
-                logger.error(f"Invalid format: {image.format}")
+                logger.error("Invalid format: {image.format}")
 
             # Check for transparency support
             if image.mode not in ("RGBA", "LA", "PA"):
@@ -437,7 +445,7 @@ class AssetValidator:
                     f"No alpha channel: Image mode is {image.mode} - "
                     f"PNG assets must support transparency (RGBA mode)"
                 )
-                logger.warning(f"No transparency support: {image.mode}")
+                logger.warning("No transparency support: {image.mode}")
 
             # Check color distribution
             if image.mode in ("RGBA", "RGB"):
@@ -451,16 +459,16 @@ class AssetValidator:
                     violations.append(
                         f"Excessive rotation in metadata: {rotation}° - " f"Maximum rotation is 15°"
                     )
-                    logger.warning(f"Excessive rotation: {rotation}°")
+                    logger.warning("Excessive rotation: {rotation}°")
 
             image.close()
 
-        except Exception as e:
+        except (OSError, IOError) as e:
             violations.append(f"Error opening/analyzing image: {str(e)}")
-            logger.exception(f"Failed to analyze image: {image_path}")
+            logger.exception("Failed to analyze image: %s", image_path)
 
         if violations:
-            logger.error(f"Image validation failed with {len(violations)} violations")
+            logger.error("Image validation failed with {len(violations)} violations")
         else:
             logger.info("Image validation passed")
 
@@ -507,7 +515,7 @@ class AssetValidator:
                     f"Maximum allowed is {self.color_limits['nickelodeon_orange']:.0%} "
                     f"(70/20/10 rule)"
                 )
-                logger.warning(f"Orange usage: {orange_ratio:.2%}")
+                logger.warning("Orange usage: {orange_ratio:.2%}")
 
             # Goosebumps Acid Green: #95C120 (149, 193, 32)
             goosebumps_color = np.array([149, 193, 32])
@@ -523,14 +531,15 @@ class AssetValidator:
                     f"Maximum allowed is {self.color_limits['goosebumps_acid']:.0%} "
                     f"(70/20/10 rule)"
                 )
-                logger.warning(f"Acid green usage: {green_ratio:.2%}")
+                logger.warning("Acid green usage: {green_ratio:.2%}")
 
             logger.info(
-                f"Color distribution - Orange: {orange_ratio:.2%}, "
-                f"Acid Green: {green_ratio:.2%}"
+                "Color distribution - Orange: %.1f%%, Acid Green: %.1f%%",
+                orange_ratio * 100,
+                green_ratio * 100,
             )
 
-        except Exception as e:
+        except (OSError, ValueError) as e:
             violations.append(f"Error analyzing color distribution: {str(e)}")
             logger.exception("Color distribution analysis failed")
 
@@ -560,19 +569,19 @@ class AssetValidator:
             >>> if not violations:
             ...     print("Layout is valid for production")
         """
-        logger.info(f"Validating layout config: {yaml_path}")
+        logger.info("Validating layout config: {yaml_path}")
         violations: List[str] = []
         path = Path(yaml_path)
 
         # Check file existence
         if not path.exists():
             violations.append(f"Layout file does not exist: {yaml_path}")
-            logger.error(f"File not found: {yaml_path}")
+            logger.error("File not found: {yaml_path}")
             return violations
 
         try:
             # Parse YAML layout file
-            with open(yaml_path, "r") as f:
+            with open(yaml_path, "r", encoding="utf-8") as f:
                 layout = yaml.safe_load(f)
 
             if not layout:
@@ -585,13 +594,13 @@ class AssetValidator:
             # Validate both left and right pages
             for page_key in ["left_page", "right_page"]:
                 if page_key not in layout:
-                    logger.warning(f"No {page_key} defined in layout")
+                    logger.warning("No {page_key} defined in layout")
                     continue
 
                 page_data = layout[page_key]
                 elements = page_data.get("elements", [])
 
-                logger.info(f"Validating {len(elements)} elements in {page_key}")
+                logger.info("Validating {len(elements)} elements in {page_key}")
 
                 for element in elements:
                     element_id = element.get("id", "unknown")
@@ -618,13 +627,13 @@ class AssetValidator:
 
         except yaml.YAMLError as e:
             violations.append(f"YAML parsing error: {str(e)}")
-            logger.exception(f"Failed to parse YAML: {yaml_path}")
-        except Exception as e:
+            logger.exception("Failed to parse YAML: %s", yaml_path)
+        except (OSError, IOError) as e:
             violations.append(f"Error validating layout: {str(e)}")
-            logger.exception(f"Layout validation failed: {yaml_path}")
+            logger.exception("Layout validation failed: %s", yaml_path)
 
         if violations:
-            logger.error(f"Layout validation failed with {len(violations)} violations")
+            logger.error("Layout validation failed with {len(violations)} violations")
         else:
             logger.info("Layout validation passed")
 
@@ -661,7 +670,7 @@ class AssetValidator:
                 f"Element at x={element_left}-{element_right} overlaps "
                 f"dead zone {self.spine_start}-{self.spine_end}"
             )
-            logger.warning(f"Spine intrusion: {element_id}")
+            logger.warning("Spine intrusion: {element_id}")
 
         return violations
 
@@ -700,7 +709,7 @@ class AssetValidator:
                 f"Excessive rotation for element '{element_id}' - "
                 f"{rotation}° exceeds {max_rotation}° limit for {element_type}"
             )
-            logger.warning(f"Rotation violation: {element_id} ({rotation}° > {max_rotation}°)")
+            logger.warning("Rotation violation: {element_id} ({rotation}° > {max_rotation}°)")
 
         return violations
 
@@ -732,7 +741,7 @@ class AssetValidator:
                 f"Safe zone violation for element '{element_id}' - "
                 f"Too close to top edge (y={y}, minimum={self.safe_zone_top})"
             )
-            logger.warning(f"Top safe zone violation: {element_id}")
+            logger.warning("Top safe zone violation: {element_id}")
 
         # Check bottom margin
         if y + height > self.canvas_height - self.safe_zone_bottom:
@@ -741,7 +750,7 @@ class AssetValidator:
                 f"Too close to bottom edge (y+h={y+height}, "
                 f"maximum={self.canvas_height - self.safe_zone_bottom})"
             )
-            logger.warning(f"Bottom safe zone violation: {element_id}")
+            logger.warning("Bottom safe zone violation: {element_id}")
 
         # Check left/right margins based on page
         if page_key == "left_page":
@@ -751,7 +760,7 @@ class AssetValidator:
                     f"Safe zone violation for element '{element_id}' - "
                     f"Too close to left edge (x={x}, minimum={self.safe_zone_left})"
                 )
-                logger.warning(f"Left safe zone violation: {element_id}")
+                logger.warning("Left safe zone violation: {element_id}")
         elif page_key == "right_page":
             # Right page: check right margin
             if x + width > self.canvas_width - self.safe_zone_right:
@@ -760,13 +769,13 @@ class AssetValidator:
                     f"Too close to right edge (x+w={x+width}, "
                     f"maximum={self.canvas_width - self.safe_zone_right})"
                 )
-                logger.warning(f"Right safe zone violation: {element_id}")
+                logger.warning("Right safe zone violation: {element_id}")
 
         return violations
 
 
 def main() -> int:
-    """Main CLI entry point for asset validation.
+    """Run asset validation from command line.
 
     Parses command line arguments and runs appropriate validation.
 
@@ -827,27 +836,27 @@ Examples:
     # Run appropriate validation
     try:
         if args.prompt:
-            logger.info(f"Validating prompt file: {args.prompt}")
+            logger.info("Validating prompt file: {args.prompt}")
             prompt_path = Path(args.prompt)
             if not prompt_path.exists():
-                logger.error(f"Prompt file not found: {args.prompt}")
+                logger.error("Prompt file not found: {args.prompt}")
                 print(f"ERROR: Prompt file not found: {args.prompt}")
                 return 1
 
-            with open(prompt_path, "r") as f:
+            with open(prompt_path, "r", encoding="utf-8") as f:
                 prompt_text = f.read()
 
             violations = validator.validate_visual_prompt(prompt_text)
 
         elif args.image:
-            logger.info(f"Validating image asset: {args.image}")
+            logger.info("Validating image asset: {args.image}")
             violations = validator.validate_image_asset(args.image)
 
         elif args.layout:
-            logger.info(f"Validating layout config: {args.layout}")
+            logger.info("Validating layout config: %s", args.layout)
             violations = validator.validate_layout_config(args.layout)
 
-    except Exception as e:
+    except (OSError, IOError, ValueError) as e:
         logger.exception("Unexpected error during validation")
         print(f"ERROR: Validation failed with exception: {str(e)}")
         return 1
@@ -861,7 +870,7 @@ Examples:
         for i, violation in enumerate(violations, 1):
             print(f"{i}. {violation}")
         print("\n" + "=" * 70)
-        logger.error(f"Validation failed with {len(violations)} violations")
+        logger.error("Validation failed with {len(violations)} violations")
         return 1
     else:
         print("VALIDATION PASSED")

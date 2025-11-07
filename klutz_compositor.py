@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-klutz_compositor.py - Main composition engine for Klutz workbook pages.
+"""Main composition engine for Klutz workbook pages.
 
 This module implements the KlutzCompositor class, which assembles two-page
 spreads from YAML layout definitions, applying authentic 1996-era printing
@@ -62,7 +61,7 @@ class KlutzCompositor:
             FileNotFoundError: If config file doesn't exist
             yaml.YAMLError: If config file is malformed
         """
-        logger.info(f"Initializing KlutzCompositor with config: {config_path}")
+        logger.info("Initializing KlutzCompositor with config: {config_path}")
 
         config_file = Path(config_path)
         if not config_file.exists():
@@ -88,8 +87,8 @@ class KlutzCompositor:
             "kraft": self._hex_to_rgb(self.config["aesthetic_rules"]["paper_colors"]["kraft"]),
         }
 
-        logger.info(f"Canvas: {self.canvas_width}x{self.canvas_height}px")
-        logger.info(f"Spine: center={self.spine_center}, width={self.spine_width}")
+        logger.info("Canvas: {self.canvas_width}x{self.canvas_height}px")
+        logger.info("Spine: center={self.spine_center}, width={self.spine_width}")
 
     @staticmethod
     def _hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
@@ -103,7 +102,8 @@ class KlutzCompositor:
             Tuple of (R, G, B) values
         """
         hex_color = hex_color.lstrip("#")
-        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+        rgb_values = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+        return (rgb_values[0], rgb_values[1], rgb_values[2])
 
     def get_chaos_rotation(self, element_id: str, max_rotation: float) -> float:
         """
@@ -128,7 +128,7 @@ class KlutzCompositor:
         random.seed(seed)
         rotation = random.uniform(-max_rotation, max_rotation)
 
-        logger.debug(f"Element '{element_id}': rotation={rotation:.2f}°")
+        logger.debug("Element '{element_id}': rotation={rotation:.2f}°")
         return rotation
 
     def create_base_canvas(self, template: str = "aged_newsprint") -> Image.Image:
@@ -150,7 +150,7 @@ class KlutzCompositor:
         Raises:
             KeyError: If template name not found in color palette
         """
-        logger.info(f"Creating base canvas with template: {template}")
+        logger.info("Creating base canvas with template: {template}")
 
         # Create solid color background
         canvas = Image.new("RGB", (self.canvas_width, self.canvas_height), self.colors[template])
@@ -206,7 +206,7 @@ class KlutzCompositor:
         # Center the binding vertically
         start_y = (self.canvas_height - (num_holes * pitch) + hole_spacing) // 2
 
-        logger.debug(f"Drawing {num_holes} binding holes")
+        logger.debug("Drawing {num_holes} binding holes")
 
         for i in range(num_holes):
             y = start_y + (i * pitch)
@@ -302,7 +302,7 @@ class KlutzCompositor:
         if not asset_path.exists():
             raise FileNotFoundError(f"Asset not found: {asset_path}")
 
-        logger.debug(f"Loading asset: {asset_config['asset']}")
+        logger.debug("Loading asset: {asset_config['asset']}")
 
         # Load as RGBA for transparency support
         asset = Image.open(asset_path).convert("RGBA")
@@ -310,13 +310,13 @@ class KlutzCompositor:
         # Resize if dimensions specified
         if "dimensions" in asset_config:
             new_size = tuple(asset_config["dimensions"])
-            logger.debug(f"Resizing to {new_size}")
+            logger.debug("Resizing to {new_size}")
             asset = asset.resize(new_size, Image.Resampling.LANCZOS)
 
         # Rotate using chaos rotation
         if "rotation" in asset_config:
             rotation = self.get_chaos_rotation(asset_config["id"], asset_config["rotation"])
-            logger.debug(f"Rotating {rotation:.2f}°")
+            logger.debug("Rotating {rotation:.2f}°")
             asset = asset.rotate(
                 rotation, expand=True, fillcolor=(0, 0, 0, 0), resample=Image.Resampling.BICUBIC
             )
@@ -330,7 +330,7 @@ class KlutzCompositor:
             hex_color = border_spec[-7:]
             color = self._hex_to_rgb(hex_color) + (255,)  # Add alpha
 
-            logger.debug(f"Adding {width}px border in {hex_color}")
+            logger.debug("Adding {width}px border in {hex_color}")
 
             # Create bordered image
             bordered = Image.new("RGBA", (asset.width + width * 2, asset.height + width * 2), color)
@@ -370,7 +370,7 @@ class KlutzCompositor:
             FileNotFoundError: If font file doesn't exist
         """
         logger.debug(
-            f"Rendering text block: font={text_config['font']}, size={text_config['size']}"
+            "Rendering text block: font=%s, size=%s", text_config["font"], text_config["size"]
         )
 
         # Load font
@@ -435,7 +435,7 @@ class KlutzCompositor:
             draw.text((padding, y), line, font=font, fill=text_color)
             y += line_height
 
-        logger.debug(f"Rendered {len(wrapped_lines)} lines of text")
+        logger.debug("Rendered {len(wrapped_lines)} lines of text")
 
         # TODO: Apply paper texture displacement for authenticity
         # This would involve subtle warping based on noise map
@@ -471,8 +471,10 @@ class KlutzCompositor:
 
         if intrudes:
             logger.warning(
-                f"Element '{element_id}' intrudes into spine dead zone. "
-                f"Original position: ({x}, {y})"
+                "Element '%s' intrudes into spine dead zone. Original position: (%s, %s)",
+                element_id,
+                x,
+                y,
             )
 
             # Auto-adjust position
@@ -481,14 +483,14 @@ class KlutzCompositor:
             if x < self.spine_center:
                 # Element is on left page - move left
                 x = self.spine_start - element.width - buffer
-                logger.info(f"Adjusted position: ({x}, {y}) [moved left]")
+                logger.info("Adjusted position: ({x}, {y}) [moved left]")
             else:
                 # Element is on right page - move right
                 x = self.spine_end + buffer
-                logger.info(f"Adjusted position: ({x}, {y}) [moved right]")
+                logger.info("Adjusted position: ({x}, {y}) [moved right]")
 
         # Paste element using alpha channel
-        logger.debug(f"Compositing '{element_id}' at ({x}, {y})")
+        logger.debug("Compositing '{element_id}' at ({x}, {y})")
         canvas.paste(element, (x, y), element)
 
         return canvas
@@ -581,7 +583,7 @@ class KlutzCompositor:
 
     def compose_spread(self, layout_path: str, apply_artifacts: bool = True) -> Image.Image:
         """
-        Main method to compose a complete two-page spread from a YAML file.
+        Compose a complete two-page spread from a YAML file.
 
         This orchestrates the entire composition pipeline:
         1. Load layout specification
@@ -600,7 +602,7 @@ class KlutzCompositor:
             FileNotFoundError: If layout file doesn't exist
             yaml.YAMLError: If layout file is malformed
         """
-        logger.info(f"Composing spread from: {layout_path}")
+        logger.info("Composing spread from: {layout_path}")
 
         # Load layout specification
         layout_file = Path(layout_path)
@@ -616,18 +618,18 @@ class KlutzCompositor:
 
         # Process elements in order (left page, then right page)
         for page_key in ["left_page", "right_page"]:
-            logger.info(f"Processing {page_key}")
+            logger.info("Processing {page_key}")
 
             page_data = layout.get(page_key, {})
             elements = page_data.get("elements", [])
 
-            logger.info(f"Found {len(elements)} elements on {page_key}")
+            logger.info("Found {len(elements)} elements on {page_key}")
 
             for element in elements:
                 element_id = element.get("id", "unknown")
                 element_type = element.get("type", "unknown")
 
-                logger.info(f"Processing element '{element_id}' (type: {element_type})")
+                logger.info("Processing element '{element_id}' (type: {element_type})")
 
                 try:
                     # Determine if text or graphic
@@ -643,7 +645,7 @@ class KlutzCompositor:
                     canvas = self.composite_element(canvas, element_img, position, element_id)
 
                 except Exception as e:
-                    logger.error(f"Failed to process element '{element_id}': {e}")
+                    logger.error("Failed to process element '%s': %s", element_id, e)
                     raise
 
         # Apply print artifacts if requested
@@ -710,7 +712,7 @@ Examples:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         spread.save(output_path, "PNG")
-        logger.info(f"Spread saved to: {output_path}")
+        logger.info("Spread saved to: {output_path}")
 
         print(f"✓ Successfully composed spread: {output_path}")
         print(f"  Dimensions: {spread.width}x{spread.height}px")
@@ -719,7 +721,7 @@ Examples:
         return 0
 
     except Exception as e:
-        logger.error(f"Composition failed: {e}", exc_info=True)
+        logger.error("Composition failed: {e}", exc_info=True)
         print(f"✗ Error: {e}", file=sys.stderr)
         return 1
 

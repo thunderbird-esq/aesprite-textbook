@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""
-prompt_generator.py - Generates hyper-specific XML prompts for AI image generation
+"""Generate hyper-specific XML prompts for AI image generation.
+
+Generates hyper-specific XML prompts for AI image generation
 Team 4: AI Integration & Processing
 """
 
@@ -63,7 +64,7 @@ class PromptGenerator:
         # Pre-compute lowercase forbidden terms for O(1) lookup performance
         self.forbidden_terms_lower = set(term.lower() for term in self.forbidden_terms)
 
-        logger.info(f"PromptGenerator initialized with {len(self.templates)} templates")
+        logger.info("PromptGenerator initialized with %d templates", len(self.templates))
 
     def _load_templates(self) -> Dict[str, str]:
         """Load all prompt templates from templates directory."""
@@ -86,9 +87,9 @@ class PromptGenerator:
                     with open(template_file, "r") as f:
                         template_data = yaml.safe_load(f)
                         templates.update(template_data.get("templates", {}))
-                    logger.info(f"Loaded template: {template_file.name}")
+                    logger.info("Loaded template: %s", template_file.name)
                 except Exception as e:
-                    logger.warning(f"Could not load template {template_file}: {e}")
+                    logger.warning("Could not load template %s: %s", template_file, e)
 
         # Use defaults if no templates loaded
         if not templates:
@@ -179,7 +180,7 @@ class PromptGenerator:
         template_key = self._get_template_key(element_type)
 
         if template_key not in self.templates:
-            logger.warning(f"No template for {template_key}, using photo template")
+            logger.warning("No template for {template_key}, using photo template")
             template_key = "photo"
 
         # Build XML structure
@@ -220,7 +221,7 @@ class PromptGenerator:
         # Validate prompt
         self._validate_prompt(xml_string)
 
-        logger.info(f"Generated prompt for {element_config.get('id', 'unknown')}")
+        logger.info("Generated prompt for {element_config.get('id', 'unknown')}")
 
         return xml_string
 
@@ -566,7 +567,7 @@ def main():
     generator = PromptGenerator(templates_dir=args.templates_dir)
 
     if args.validate_only:
-        logger.info(f"Validating configuration: {args.config}")
+        logger.info("Validating configuration: {args.config}")
         # Validation happens during generation
         try:
             _ = generator.generate_element_prompt(element_config)
@@ -586,11 +587,11 @@ def main():
             with open(output_path, "w") as f:
                 f.write(xml_prompt)
 
-            logger.info(f"Prompt written to: {output_path}")
+            logger.info("Prompt written to: {output_path}")
             print(f"✓ Generated prompt: {output_path}")
 
         except Exception as e:
-            logger.error(f"Failed to generate prompt: {e}")
+            logger.error("Failed to generate prompt: {e}")
             print(f"✗ Error: {e}")
             return 1
 

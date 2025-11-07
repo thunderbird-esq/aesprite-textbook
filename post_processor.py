@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""
-post_processor.py - Post-processing effects for 1996 print aesthetic
+"""Post-process images with 1996 print aesthetic effects.
+
+Post-processing effects for 1996 print aesthetic
 Team 4: AI Integration & Processing
 """
 
@@ -46,13 +47,13 @@ class PostProcessor:
         if config_path and Path(config_path).exists():
             with open(config_path, "r") as f:
                 self.config = yaml.safe_load(f)
-            logger.info(f"Loaded config from {config_path}")
+            logger.info("Loaded config from {config_path}")
         else:
             self.config = self._get_default_config()
             logger.info("Using default configuration")
 
     def _get_default_config(self) -> Dict:
-        """Get default processing configuration"""
+        """Get default processing configuration."""
         return {
             "paper_texture": {"enabled": True, "opacity": 0.08, "grain_size": 1.5},
             "cmyk_shift": {"enabled": True, "magenta": [1, 0], "yellow": [0, -1]},
@@ -90,7 +91,7 @@ class PostProcessor:
         # Blend texture with image
         result = Image.blend(image, texture, alpha=opacity)
 
-        logger.debug(f"Applied texture with opacity {opacity}")
+        logger.debug("Applied texture with opacity {opacity}")
         return result
 
     def _generate_paper_texture(self, size: Tuple[int, int]) -> Image.Image:
@@ -137,7 +138,7 @@ class PostProcessor:
         Returns:
             Image with CMYK shift applied
         """
-        logger.debug(f"Applying CMYK shift: M{magenta_shift} Y{yellow_shift}")
+        logger.debug("Applying CMYK shift: M{magenta_shift} Y{yellow_shift}")
 
         if image.mode != "RGB":
             image = image.convert("RGB")
@@ -170,7 +171,7 @@ class PostProcessor:
         Returns:
             Image with dot gain applied
         """
-        logger.debug(f"Applying dot gain (gamma={gamma})")
+        logger.debug("Applying dot gain (gamma={gamma})")
 
         # Apply gamma correction to simulate ink spreading
         enhancer = ImageEnhance.Brightness(image)
@@ -190,7 +191,7 @@ class PostProcessor:
         Returns:
             Image with vignette applied
         """
-        logger.debug(f"Applying vignette (opacity={opacity})")
+        logger.debug("Applying vignette (opacity={opacity})")
 
         if image.mode != "RGB":
             image = image.convert("RGB")
@@ -282,15 +283,15 @@ class PostProcessor:
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Find all images
-        image_files = []
+        image_files: list[Path] = []
         for ext in ["*.png", "*.jpg", "*.jpeg"]:
             image_files.extend(input_path.glob(ext))
 
         if not image_files:
-            logger.warning(f"No images found in {input_dir}")
+            logger.warning("No images found in {input_dir}")
             return 0
 
-        logger.info(f"Processing {len(image_files)} images")
+        logger.info("Processing {len(image_files)} images")
 
         # Progress bar
         if TQDM_AVAILABLE:
@@ -313,17 +314,17 @@ class PostProcessor:
                 result.save(output_file)
 
                 processed += 1
-                logger.debug(f"Processed: {image_file.name}")
+                logger.debug("Processed: {image_file.name}")
 
             except Exception as e:
-                logger.error(f"Failed to process {image_file.name}: {e}")
+                logger.error("Failed to process %s: %s", image_file.name, e)
 
-        logger.info(f"Processed {processed}/{len(image_files)} images")
+        logger.info("Processed {processed}/{len(image_files)} images")
         return processed
 
 
 def main():
-    """CLI interface for post-processor"""
+    """CLI interface for post-processor."""
     parser = argparse.ArgumentParser(description="Apply 1996 print artifacts to images")
     parser.add_argument("--input", help="Input image file (for single image processing)")
     parser.add_argument("--input-dir", help="Input directory (for batch processing)")
@@ -353,7 +354,7 @@ def main():
     # Single or batch mode
     if args.input and args.output:
         # Single image processing
-        logger.info(f"Processing: {args.input}")
+        logger.info("Processing: {args.input}")
 
         try:
             img = Image.open(args.input)
@@ -367,7 +368,7 @@ def main():
             return 0
 
         except Exception as e:
-            logger.error(f"Processing failed: {e}")
+            logger.error("Processing failed: {e}")
             print(f"✗ Error: {e}")
             return 1
 
@@ -384,7 +385,7 @@ def main():
                 return 1
 
         except Exception as e:
-            logger.error(f"Batch processing failed: {e}")
+            logger.error("Batch processing failed: {e}")
             print(f"✗ Error: {e}")
             return 1
 

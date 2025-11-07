@@ -27,6 +27,7 @@ pylint>=3.0.0
 isort>=5.13.0
 
 # Security
+defusedxml>=0.0.1
 bandit>=1.7.0
 safety>=2.3.0
 

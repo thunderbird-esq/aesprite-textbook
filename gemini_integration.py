@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""
-gemini_integration.py - Integration with Google Gemini API for prompt generation
+"""Integrate with Google Gemini API for prompt generation.
+
+Integrate with Google Gemini API for prompt generation
 Team 4: AI Integration & Processing
 """
 
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RateLimitConfig:
-    """Rate limit configuration"""
+    """Rate limit configuration."""
 
     requests_per_minute: int = 60
     requests_per_hour: int = 1500
@@ -44,19 +45,24 @@ class RateLimitConfig:
 
 
 class ResponseCache:
-    """Cache for API responses to avoid duplicate calls"""
+    """Cache for API responses to avoid duplicate calls."""
 
     def __init__(self, cache_dir: str = ".cache/gemini"):
+        """Initialize the response cache.
+
+        Args:
+            cache_dir: Directory path for storing cached responses.
+        """
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Response cache initialized at {self.cache_dir}")
+        logger.info("Response cache initialized at {self.cache_dir}")
 
     def _get_cache_key(self, prompt: str) -> str:
-        """Generate cache key from prompt"""
+        """Generate cache key from prompt."""
         return hashlib.sha256(prompt.encode()).hexdigest()
 
     def get(self, prompt: str) -> Optional[str]:
-        """Retrieve cached response"""
+        """Retrieve cached response."""
         cache_key = self._get_cache_key(prompt)
         cache_file = self.cache_dir / f"{cache_key}.json"
 
@@ -67,17 +73,18 @@ class ResponseCache:
                 # Check if cache is still valid (24 hours)
                 cached_time = datetime.fromisoformat(cached["timestamp"])
                 if datetime.now() - cached_time < timedelta(hours=24):
-                    logger.debug(f"Cache hit for prompt hash {cache_key[:8]}")
-                    return cached["response"]
+                    logger.debug("Cache hit for prompt hash %s", cache_key[:8])
+                    response: str = cached["response"]
+                    return response
                 else:
-                    logger.debug(f"Cache expired for {cache_key[:8]}")
+                    logger.debug("Cache expired for %s", cache_key[:8])
             except Exception as e:
-                logger.warning(f"Error reading cache: {e}")
+                logger.warning("Error reading cache: %s", e)
 
         return None
 
     def set(self, prompt: str, response: str):
-        """Store response in cache"""
+        """Store response in cache."""
         cache_key = self._get_cache_key(prompt)
         cache_file = self.cache_dir / f"{cache_key}.json"
 
@@ -92,21 +99,26 @@ class ResponseCache:
                     f,
                     indent=2,
                 )
-            logger.debug(f"Cached response for {cache_key[:8]}")
+            logger.debug("Cached response for %s", cache_key[:8])
         except Exception as e:
-            logger.warning(f"Error writing cache: {e}")
+            logger.warning("Error writing cache: %s", e)
 
 
 class RateLimiter:
-    """Rate limiter for API calls"""
+    """Rate limiter for API calls."""
 
     def __init__(self, config: RateLimitConfig):
+        """Initialize the rate limiter.
+
+        Args:
+            config: Rate limit configuration object.
+        """
         self.config = config
         self.minute_calls: List[float] = []
         self.hour_calls: List[float] = []
 
     def wait_if_needed(self):
-        """Wait if rate limit would be exceeded"""
+        """Wait if rate limit would be exceeded."""
         current_time = time.time()
 
         # Clean old entries
@@ -117,13 +129,13 @@ class RateLimiter:
         if len(self.minute_calls) >= self.config.requests_per_minute:
             wait_time = 60 - (current_time - self.minute_calls[0])
             if wait_time > 0:
-                logger.info(f"Rate limit: waiting {wait_time:.1f}s")
+                logger.info("Rate limit: waiting {wait_time:.1f}s")
                 time.sleep(wait_time)
 
         if len(self.hour_calls) >= self.config.requests_per_hour:
             wait_time = 3600 - (current_time - self.hour_calls[0])
             if wait_time > 0:
-                logger.warning(f"Hourly rate limit: waiting {wait_time:.1f}s")
+                logger.warning("Hourly rate limit: waiting {wait_time:.1f}s")
                 time.sleep(wait_time)
 
         # Record this call
@@ -172,16 +184,16 @@ class GeminiClient:
                 logger.error("google-generativeai not installed")
                 self.mock_mode = True
 
-        logger.info(f"GeminiClient initialized (mock={self.mock_mode})")
+        logger.info("GeminiClient initialized (mock={self.mock_mode})")
 
     def init_client(self, api_key: str):
-        """Initialize the Gemini API client"""
+        """Initialize the Gemini API client."""
         try:
             genai.configure(api_key=api_key)
             self.model = genai.GenerativeModel(self.model_name)
-            logger.info(f"Gemini API initialized with model {self.model_name}")
+            logger.info("Gemini API initialized with model %s", self.model_name)
         except Exception as e:
-            logger.error(f"Failed to initialize Gemini API: {e}")
+            logger.error("Failed to initialize Gemini API: %s", e)
             self.mock_mode = True
 
     def transform_layout_to_prompts(self, layout_yaml: str) -> List[str]:
@@ -206,15 +218,15 @@ class GeminiClient:
                 continue
 
             elements = layout[page_key].get("elements", [])
-            logger.info(f"Processing {len(elements)} elements from {page_key}")
+            logger.info("Processing {len(elements)} elements from {page_key}")
 
             for element in elements:
                 try:
                     prompt = self.generate_component_prompt(element.get("type", "unknown"), element)
                     prompts.append(prompt)
-                    logger.info(f"Generated prompt for {element.get('id', 'unknown')}")
+                    logger.info("Generated prompt for %s", element.get("id", "unknown"))
                 except Exception as e:
-                    logger.error(f"Failed to generate prompt for {element.get('id')}: {e}")
+                    logger.error("Failed to generate prompt for %s: %s", element.get("id"), e)
 
         return prompts
 
@@ -238,7 +250,7 @@ class GeminiClient:
             cache_key = f"{system_prompt}|||{user_prompt}"
             cached_response = self.cache.get(cache_key)
             if cached_response:
-                logger.info(f"Using cached response for {params.get('id', 'unknown')}")
+                logger.info("Using cached response for {params.get('id', 'unknown')}")
                 return cached_response
 
         # Make API call with retry
@@ -271,15 +283,18 @@ class GeminiClient:
 
                 # Make the API call
                 full_prompt = f"{system_prompt}\n\n{user_prompt}"
+                if self.model is None:
+                    raise RuntimeError("Model is not initialized")
                 response = self.model.generate_content(full_prompt)
 
                 if response and response.text:
-                    return response.text
+                    result: str = response.text
+                    return result
                 else:
-                    logger.warning(f"Empty response on attempt {attempt + 1}")
+                    logger.warning("Empty response on attempt %s", attempt + 1)
 
             except Exception as e:
-                logger.warning(f"API call failed (attempt {attempt + 1}): {e}")
+                logger.warning("API call failed (attempt %s): %s", attempt + 1, e)
 
                 if attempt < self.rate_limiter.config.retry_attempts - 1:
                     # Exponential backoff
@@ -287,7 +302,7 @@ class GeminiClient:
                         self.rate_limiter.config.base_delay * (2**attempt),
                         self.rate_limiter.config.max_delay,
                     )
-                    logger.info(f"Retrying in {delay}s...")
+                    logger.info("Retrying in {delay}s...")
                     time.sleep(delay)
                 else:
                     logger.error("All retry attempts failed")
@@ -296,7 +311,7 @@ class GeminiClient:
         return ""
 
     def _get_system_prompt(self) -> str:
-        """Get the system prompt for Gemini"""
+        """Get the system prompt for Gemini."""
         return (
             "You are a specialized prompt engineer for a project recreating a 1996 "
             "Klutz Press computer graphics workbook. Your task is to transform simple "
@@ -326,7 +341,7 @@ class GeminiClient:
         )
 
     def _build_user_prompt(self, element_type: str, params: Dict) -> str:
-        """Build user prompt from element parameters"""
+        """Build user prompt from element parameters."""
         element_id = params.get("id", "unknown")
         dimensions = params.get("dimensions", [800, 600])
 
@@ -372,7 +387,7 @@ Output ONLY the XML, no explanations."""
         return prompt
 
     def _generate_mock_response(self, user_prompt: str) -> str:
-        """Generate a mock XML response for testing"""
+        """Generate a mock XML response for testing."""
         # Extract element ID from prompt
         import re
 
@@ -399,7 +414,7 @@ Output ONLY the XML, no explanations."""
 
 
 def main():
-    """CLI interface for Gemini integration"""
+    """CLI interface for Gemini integration."""
     parser = argparse.ArgumentParser(description="Transform layouts to prompts using Gemini API")
     parser.add_argument("--layout", required=True, help="Path to layout YAML file")
     parser.add_argument(
@@ -420,7 +435,7 @@ def main():
 
     # Transform layout
     try:
-        logger.info(f"Processing layout: {args.layout}")
+        logger.info("Processing layout: {args.layout}")
         prompts = client.transform_layout_to_prompts(args.layout)
 
         # Write prompts to files
@@ -429,12 +444,12 @@ def main():
             output_file = output_dir / f"{layout_name}_element_{i:03d}.xml"
             with open(output_file, "w") as f:
                 f.write(prompt)
-            logger.info(f"Wrote prompt to {output_file}")
+            logger.info("Wrote prompt to {output_file}")
 
         print(f"✓ Generated {len(prompts)} prompts in {output_dir}")
 
     except Exception as e:
-        logger.error(f"Failed to process layout: {e}")
+        logger.error("Failed to process layout: {e}")
         print(f"✗ Error: {e}")
         return 1
 
