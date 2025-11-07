@@ -205,10 +205,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
 ## Links
 
-- **Repository:** [GitHub](https://github.com/yourusername/aesprite-textbook)
+- **Repository:** [GitHub](https://github.com/thunderbird-esq/aesprite-textbook)
 - **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/yourusername/aesprite-textbook/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/aesprite-textbook/discussions)
+- **Issues:** [GitHub Issues](https://github.com/thunderbird-esq/aesprite-textbook/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/thunderbird-esq/aesprite-textbook/discussions)
 
 ---
 

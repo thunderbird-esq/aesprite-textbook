@@ -28,6 +28,26 @@ class PromptGenerator:
     image generation, using template-based substitution.
     """
 
+    # Default configuration constants
+    DEFAULT_DIMENSIONS = [800, 600]
+    DEFAULT_DPI = 300
+    DEFAULT_COLOR_SPACE = "sRGB"
+    DEFAULT_FILM_STOCK = "Kodak Gold 400"
+    DEFAULT_GRAIN = "moderate"
+    DEFAULT_LENS = "100mm macro"
+    DEFAULT_APERTURE = "f/11"
+    DEFAULT_SOFTWARE = "MacPaint"
+    DEFAULT_RESOLUTION = "512x342"
+    DEFAULT_COLOR_DEPTH = "monochrome"
+    DEFAULT_SHAPE = "irregular blob"
+    DEFAULT_BORDER_WIDTH = "4px"
+    DEFAULT_BORDER_COLOR = "#000000"
+    DEFAULT_FILL_COLOR = "#F57D0D"
+    DEFAULT_SHADOW = "hard drop shadow, 3px right, 3px down, pure black"
+    DEFAULT_GRID_SIZE = "16x16"
+    DEFAULT_PALETTE = "16-color"
+    DEFAULT_PIXEL_STYLE = "NES/SNES era sprite"
+
     def __init__(self, templates_dir: str = "config/templates"):
         """
         Initialize prompt generator with template system.
@@ -40,6 +60,8 @@ class PromptGenerator:
 
         # Load forbidden terms from validation
         self.forbidden_terms = self._load_forbidden_terms()
+        # Pre-compute lowercase forbidden terms for O(1) lookup performance
+        self.forbidden_terms_lower = set(term.lower() for term in self.forbidden_terms)
 
         logger.info(f"PromptGenerator initialized with {len(self.templates)} templates")
 
@@ -220,13 +242,13 @@ class PromptGenerator:
         specs = ET.SubElement(root, "image_specifications")
 
         dims = ET.SubElement(specs, "dimensions")
-        width, height = config.get("dimensions", [800, 600])
+        width, height = config.get("dimensions", self.DEFAULT_DIMENSIONS)
         dims.set("width", str(width))
         dims.set("height", str(height))
-        dims.set("dpi", str(config.get("dpi", 300)))
+        dims.set("dpi", str(config.get("dpi", self.DEFAULT_DPI)))
 
         color_space = ET.SubElement(specs, "color_space")
-        color_space.text = config.get("color_space", "sRGB")
+        color_space.text = config.get("color_space", self.DEFAULT_COLOR_SPACE)
 
     def _add_photo_parameters(self, root: ET.Element, config: Dict):
         """Add photographic parameters to XML."""
@@ -234,11 +256,11 @@ class PromptGenerator:
 
         # Film stock
         film = ET.SubElement(params, "film_stock")
-        film.text = config.get("film_stock", "Kodak Gold 400")
+        film.text = config.get("film_stock", self.DEFAULT_FILM_STOCK)
 
         # Grain
         grain = ET.SubElement(params, "grain_intensity")
-        grain.text = config.get("grain", "moderate")
+        grain.text = config.get("grain", self.DEFAULT_GRAIN)
 
         # Color characteristics
         color_char = ET.SubElement(params, "color_characteristics")
@@ -249,10 +271,10 @@ class PromptGenerator:
 
         # Lens and aperture
         lens = ET.SubElement(params, "lens")
-        lens.text = config.get("lens", "100mm macro")
+        lens.text = config.get("lens", self.DEFAULT_LENS)
 
         aperture = ET.SubElement(params, "aperture")
-        aperture.text = config.get("aperture", "f/11")
+        aperture.text = config.get("aperture", self.DEFAULT_APERTURE)
 
         # Lighting setup
         self._add_lighting_setup(params, config)
@@ -287,14 +309,14 @@ class PromptGenerator:
 
         # Software being recreated
         software = ET.SubElement(params, "software")
-        software.text = config.get("software", "MacPaint")
+        software.text = config.get("software", self.DEFAULT_SOFTWARE)
 
         # Display specs
         display = ET.SubElement(params, "display_specifications")
         resolution = ET.SubElement(display, "resolution")
-        resolution.text = config.get("resolution", "512x342")
+        resolution.text = config.get("resolution", self.DEFAULT_RESOLUTION)
         color_depth = ET.SubElement(display, "color_depth")
-        color_depth.text = config.get("color_depth", "monochrome")
+        color_depth.text = config.get("color_depth", self.DEFAULT_COLOR_DEPTH)
 
         # Interface style
         style = ET.SubElement(params, "interface_style")
@@ -306,11 +328,11 @@ class PromptGenerator:
 
         # Grid size
         grid = ET.SubElement(params, "grid_size")
-        grid.text = config.get("grid_size", "16x16")
+        grid.text = config.get("grid_size", self.DEFAULT_GRID_SIZE)
 
         # Color palette
         palette = ET.SubElement(params, "color_palette")
-        palette.text = config.get("palette", "16-color")
+        palette.text = config.get("palette", self.DEFAULT_PALETTE)
 
         # Scaling
         scaling = ET.SubElement(params, "scaling_method")
@@ -318,7 +340,7 @@ class PromptGenerator:
 
         # Style
         style = ET.SubElement(params, "pixel_style")
-        style.text = config.get("style", "NES/SNES era sprite")
+        style.text = config.get("style", self.DEFAULT_PIXEL_STYLE)
 
     def _add_container_parameters(self, root: ET.Element, config: Dict):
         """Add container/shape parameters."""
@@ -326,22 +348,22 @@ class PromptGenerator:
 
         # Shape
         shape = ET.SubElement(params, "shape")
-        shape.text = config.get("shape", "irregular blob")
+        shape.text = config.get("shape", self.DEFAULT_SHAPE)
 
         # Border
         border = ET.SubElement(params, "border")
         border_width = ET.SubElement(border, "width")
-        border_width.text = str(config.get("border_width", "4px"))
+        border_width.text = str(config.get("border_width", self.DEFAULT_BORDER_WIDTH))
         border_color = ET.SubElement(border, "color")
-        border_color.text = config.get("border_color", "#000000")
+        border_color.text = config.get("border_color", self.DEFAULT_BORDER_COLOR)
 
         # Fill
         fill = ET.SubElement(params, "fill")
-        fill.text = config.get("fill_color", "#F57D0D")
+        fill.text = config.get("fill_color", self.DEFAULT_FILL_COLOR)
 
         # Shadow
         shadow = ET.SubElement(params, "shadow")
-        shadow.text = "hard drop shadow, 3px right, 3px down, pure black"
+        shadow.text = self.DEFAULT_SHADOW
 
     def _generate_prompts_from_template(self, template_key: str, config: Dict) -> tuple:
         """
@@ -411,11 +433,12 @@ class PromptGenerator:
         """
         xml_lower = xml_string.lower()
 
-        # Check for forbidden terms
+        # Check for forbidden terms using pre-computed lowercase set for O(1) lookups
         found_terms = []
-        for term in self.forbidden_terms:
-            if term.lower() in xml_lower:
-                found_terms.append(term)
+        for term_lower in self.forbidden_terms_lower:
+            if term_lower in xml_lower:
+                # Find original term for error message
+                found_terms.append(next(t for t in self.forbidden_terms if t.lower() == term_lower))
 
         if found_terms:
             error_msg = f"Prompt contains forbidden anachronistic terms: {', '.join(found_terms)}"

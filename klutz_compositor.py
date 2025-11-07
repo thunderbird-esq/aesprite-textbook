@@ -128,7 +128,7 @@ class KlutzCompositor:
         random.seed(seed)
         rotation = random.uniform(-max_rotation, max_rotation)
 
-        logger.debug(f"Element '{element_id}': rotation={rotation:.2f}�")
+        logger.debug(f"Element '{element_id}': rotation={rotation:.2f}°")
         return rotation
 
     def create_base_canvas(self, template: str = "aged_newsprint") -> Image.Image:
@@ -316,7 +316,7 @@ class KlutzCompositor:
         # Rotate using chaos rotation
         if "rotation" in asset_config:
             rotation = self.get_chaos_rotation(asset_config["id"], asset_config["rotation"])
-            logger.debug(f"Rotating {rotation:.2f}�")
+            logger.debug(f"Rotating {rotation:.2f}°")
             asset = asset.rotate(
                 rotation, expand=True, fillcolor=(0, 0, 0, 0), resample=Image.Resampling.BICUBIC
             )

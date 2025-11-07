@@ -449,9 +449,9 @@ class AssetValidator:
                 rotation = float(image.info["rotation"])
                 if abs(rotation) > 15:
                     violations.append(
-                        f"Excessive rotation in metadata: {rotation}� - " f"Maximum rotation is 15�"
+                        f"Excessive rotation in metadata: {rotation}° - " f"Maximum rotation is 15°"
                     )
-                    logger.warning(f"Excessive rotation: {rotation}�")
+                    logger.warning(f"Excessive rotation: {rotation}°")
 
             image.close()
 
@@ -542,7 +542,7 @@ class AssetValidator:
         Checks:
         - YAML file is valid and parseable
         - No spine intrusion (elements in dead zone 1469-1931)
-        - Rotation limits (text d5�, containers d15�, photos d10�)
+        - Rotation limits (text d5°, containers d15°, photos d10°)
         - Safe zones for left/right pages
         - Color usage ratios (if color data present)
 
@@ -698,9 +698,9 @@ class AssetValidator:
         if max_rotation is not None and abs(rotation) > max_rotation:
             violations.append(
                 f"Excessive rotation for element '{element_id}' - "
-                f"{rotation}� exceeds {max_rotation}� limit for {element_type}"
+                f"{rotation}° exceeds {max_rotation}° limit for {element_type}"
             )
-            logger.warning(f"Rotation violation: {element_id} ({rotation}� > {max_rotation}�)")
+            logger.warning(f"Rotation violation: {element_id} ({rotation}° > {max_rotation}°)")
 
         return violations
 

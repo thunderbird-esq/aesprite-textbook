@@ -40,7 +40,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 ### Enforcement
 
-Project maintainers will address any unacceptable behavior. Report incidents to [project maintainers].
+Project maintainers will address any unacceptable behavior. Report incidents to thunderbird-esq.
 
 ---
 
@@ -57,8 +57,8 @@ Project maintainers will address any unacceptable behavior. Report incidents to 
 
 1. Read the [README.md](README.md) for project overview
 2. Review [docs/architecture/system-overview.md](docs/architecture/system-overview.md)
-3. Check [open issues](https://github.com/yourusername/aesprite-textbook/issues) for good first issues
-4. Join our [Discussions](https://github.com/yourusername/aesprite-textbook/discussions)
+3. Check [open issues](https://github.com/thunderbird-esq/aesprite-textbook/issues) for good first issues
+4. Join our [Discussions](https://github.com/thunderbird-esq/aesprite-textbook/discussions)
 
 ### Areas for Contribution
 
@@ -77,7 +77,7 @@ Project maintainers will address any unacceptable behavior. Report incidents to 
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/aesprite-textbook.git
+git clone https://github.com/thunderbird-esq/aesprite-textbook.git
 cd aesprite-textbook
 ```
 
@@ -678,8 +678,8 @@ Look for issues labeled:
 ## Questions?
 
 - **Documentation:** Check [docs/](docs/)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/aesprite-textbook/discussions)
-- **Issues:** [GitHub Issues](https://github.com/yourusername/aesprite-textbook/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/thunderbird-esq/aesprite-textbook/discussions)
+- **Issues:** [GitHub Issues](https://github.com/thunderbird-esq/aesprite-textbook/issues)
 
 ---
 
